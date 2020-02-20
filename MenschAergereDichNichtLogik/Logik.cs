@@ -63,7 +63,7 @@ namespace MenschAergereDichNichtLogik
 			new Point(6, 0),
 		};
 
-		public static Field[][] Board { get; set; } = new Field[][]
+		public static Field[][] Board { get; private set; } = new Field[][]
 		{
 			new Field[11],
 			new Field[11],
@@ -78,9 +78,9 @@ namespace MenschAergereDichNichtLogik
 			new Field[11]
 		};
 
-		static Player CurrentPlayer;
+		public static Player CurrentPlayer { get; private set}
 
-		static Queue<Player> PlayerQueue = new Queue<Player>();
+		private static Queue<Player> PlayerQueue = new Queue<Player>();
 
 		public static void FieldClick(int X, int Y)
 		{
