@@ -111,8 +111,19 @@ namespace MenschAergereDichNichtLogik
 
 		}
 
-		public static void GameStart()
+		public static void GameStart(List<string> PlayerNames)
 		{
+			if(PlayerNames.Count > 4 || PlayerNames.Count < 1)
+			{
+				throw new ArgumentOutOfRangeException("PlayerNames", PlayerNames, "Die Liste muss zwischen 1 und 4 Namen enthalten");
+			}
+			
+
+
+
+
+
+
 
 			foreach (Point point in StandardBoard)
 			{
