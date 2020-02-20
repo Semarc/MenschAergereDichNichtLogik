@@ -4,13 +4,13 @@ using System.Text;
 
 namespace MenschAergereDichNichtLogik
 {
-	public enum Farbe
+	public enum Color
 	{
-		Rot,
-		Schwarz,
-		Gelb,
-		Gruen,
-		Leer
+		Red,
+		Black,
+		Yellow,
+		Green,
+		Empty
 	}
 
 	public class Field
@@ -20,6 +20,6 @@ namespace MenschAergereDichNichtLogik
 
 		}
 
-		public Farbe Farbe { get; set; }
+		public Color Color { get; set; }
 	}
 }

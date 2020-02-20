@@ -6,12 +6,12 @@ namespace MenschAergereDichNichtLogik
 {
 	public class Player
 	{
-		public Player()
+		internal Player()
 		{
 
 		}
 
-		public Farbe Farbe { get; set; }
+		public Color Color { get; set; }
 		public string Name { get; set; }
 		public int NumberHome { get; set; }
 	}

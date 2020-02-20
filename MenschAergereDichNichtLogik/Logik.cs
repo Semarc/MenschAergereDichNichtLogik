@@ -6,8 +6,8 @@ namespace MenschAergereDichNichtLogik
 {
 	public static class Logik
 	{
-        private static  Random randomnumber = new Random();
-        public static  int wuerfelzahl { get; private set; }
+		private static Random randomnumber = new Random();
+		public static int wuerfelzahl { get; private set; }
 
 		private static List<Point> StandardBoard = new List<Point>
 		{
@@ -78,7 +78,7 @@ namespace MenschAergereDichNichtLogik
 			new Field[11]
 		};
 
-		public static Player CurrentPlayer { get; private set}
+		public static Player CurrentPlayer { get; private set; }
 
 		private static Queue<Player> PlayerQueue = new Queue<Player>();
 
@@ -89,14 +89,25 @@ namespace MenschAergereDichNichtLogik
 
 		public static void DiceKlick()
 		{
-          wuerfelzahl =  randomnumber.Next(1, 6);
-            
+			if (wuerfelzahl == 0)
+			{
+				wuerfelzahl = randomnumber.Next(1, 7);
+			}
 
 
 		}
 
-		public static void HomeClick()
+		public static void HomeClick(Color HausColor)
 		{
+
+			if (HausColor == CurrentPlayer.Color)
+			{
+
+			}
+			else
+			{
+				return;
+			}
 
 		}
 
@@ -105,9 +116,9 @@ namespace MenschAergereDichNichtLogik
 
 			foreach (Point point in StandardBoard)
 			{
-				Board[point.X][point.Y] = new Field(); 
+				Board[point.X][point.Y] = new Field();
 			}
-			
+
 
 
 		}
