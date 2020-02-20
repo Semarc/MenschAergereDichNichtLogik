@@ -6,6 +6,8 @@ namespace MenschAergereDichNichtLogik
 {
 	public static class Logik
 	{
+        private static  Random randomnumber = new Random();
+        public static  int wuerfelzahl { get; private set; }
 
 		private static List<Point> StandardBoard = new List<Point>
 		{
@@ -87,6 +89,9 @@ namespace MenschAergereDichNichtLogik
 
 		public static void DiceKlick()
 		{
+          wuerfelzahl =  randomnumber.Next(1, 6);
+            
+
 
 		}
 
