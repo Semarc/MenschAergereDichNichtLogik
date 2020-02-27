@@ -11,8 +11,8 @@ namespace MenschAergereDichNichtLogik
 
 		}
 
-		public Color Color { get; set; }
-		public string Name { get; set; }
-		public int NumberHome { get; set; }
+		public Color Color { get; internal set; }
+		public string Name { get; internal set; }
+		public int NumberHome { get; internal set; }
 	}
 }

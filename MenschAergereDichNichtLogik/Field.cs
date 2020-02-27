@@ -21,8 +21,11 @@ namespace MenschAergereDichNichtLogik
 
 		}
 
-		public Color Color { get; set; }
+		public Color Color { get; internal set; }
 		public (int, int) NextField { get; internal set; } = (-1, -1);
+
+		internal bool IsUrsprung { get; set; } = false;
+		public bool IsAusgewaehlt { get; internal set; } = false;
 	}
 
 	public class FinishField : Field
@@ -33,8 +36,8 @@ namespace MenschAergereDichNichtLogik
 			this.index = index;
 		}
 
-		public int index { get; set; }
-		public Color FinishPointColor { get; set; }
+		public int index { get; internal set; }
+		public Color FinishPointColor { get; internal set; }
 	}
 
 }
