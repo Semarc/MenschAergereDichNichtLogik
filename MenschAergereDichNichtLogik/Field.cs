@@ -22,4 +22,17 @@ namespace MenschAergereDichNichtLogik
 
 		public Color Color { get; set; }
 	}
+
+	public class FinishField : Field
+	{
+		internal FinishField(Color FinishPointColor, int index)
+		{
+			this.FinishPointColor = FinishPointColor;
+			this.index = index;
+		}
+
+		public int index { get; set; }
+		public Color FinishPointColor { get; set; }
+	}
+
 }
