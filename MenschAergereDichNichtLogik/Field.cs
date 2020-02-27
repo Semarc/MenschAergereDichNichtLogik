@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 
 namespace MenschAergereDichNichtLogik
@@ -21,6 +22,7 @@ namespace MenschAergereDichNichtLogik
 		}
 
 		public Color Color { get; set; }
+		public (int, int) NextField { get; internal set; } = (-1, -1);
 	}
 
 	public class FinishField : Field
