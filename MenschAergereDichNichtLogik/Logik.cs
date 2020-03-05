@@ -6,13 +6,6 @@ namespace MenschAergereDichNichtLogik
 {
 	public static class Logik
 	{
-		static Logik()
-		{
-			HouseEntrypoints.Add(Color.Green, ((5, 10), (5, 9)));
-			HouseEntrypoints.Add(Color.Red, ((10, 5), (9, 5)));
-			HouseEntrypoints.Add(Color.Black, ((5, 0), (5, 1)));
-			HouseEntrypoints.Add(Color.Yellow, ((0, 5), (1, 5)));
-		}
 		private static Random randomnumber = new Random();
 		/// <summary>
 		/// Gibt an, ob das Spiel gestartet wurde
@@ -23,7 +16,21 @@ namespace MenschAergereDichNichtLogik
 		/// <summary>
 		/// Gibt an, welche Punkte für welche Farbe die Eingänge zum Haus sind
 		/// </summary>
-		private static Dictionary<Color, ((int, int), (int, int))> HouseEntrypoints = new Dictionary<Color, ((int, int), (int, int))>();
+		private static Dictionary<Color, ((int, int), (int, int))> HouseEntrypoints = new Dictionary<Color, ((int, int), (int, int))>()
+		{
+			[Color.Green] = ((5, 10), (5, 9)),
+			[Color.Red] = ((10, 5), (9, 5)),
+			[Color.Black] = ((5, 0), (5, 1)),
+			[Color.Yellow] = ((0, 5), (1, 5)),
+		};
+
+		private static Dictionary<Color, (int, int)> HouseEndPoints = new Dictionary<Color, (int, int)>()
+		{
+			[Color.Green] = (5, 6),
+			[Color.Red] = (6, 5),
+			[Color.Black] = (5, 4),
+			[Color.Yellow] = (4, 5)
+		};
 
 		/// <summary>
 		/// Die Farbe, die als nächstes gesetzt werden soll
@@ -182,7 +189,7 @@ namespace MenschAergereDichNichtLogik
 					else if (Board[X][Y].Color == players[CurrentPlayerIndex].Color)
 					{
 						AusgewaehltZurücksetzen();
-						Pfadesucher(wuerfelzahl);
+						Pfadesucher(wuerfelzahl, X, Y);
 					}
 				}
 			}
@@ -191,9 +198,46 @@ namespace MenschAergereDichNichtLogik
 		/// <summary>
 		/// Geht rekursiv durch die Anzahl des Würfel an feldern durch
 		/// </summary>
-		private static void Pfadesucher(int Wuerfel)
+		private static bool Pfadesucher(int Wuerfel, int X, int Y)
 		{
+			if (Wuerfel == 0)
+			{
+				Board[X][Y].IsAusgewaehlt = true;
+				return true;
+			}
+			else if (Wuerfel == wuerfelzahl)
+			{
+				AusgewaehltZurücksetzen();
+				Board[X][Y].IsUrsprung = true;
+			}
+			if (HouseEntrypoints[players[CurrentPlayerIndex].Color].Item1.Item1 == X && HouseEntrypoints[players[CurrentPlayerIndex].Color].Item1.Item2 == Y)
+			{
+				return HausPfadesucher(Wuerfel - 1, HouseEntrypoints[players[CurrentPlayerIndex].Color].Item2.Item1, HouseEntrypoints[players[CurrentPlayerIndex].Color].Item2.Item2);
+			}
+			Pfadesucher(Wuerfel - 1, Board[X][Y].NextField.Item1, Board[X][Y].NextField.Item2);
+			
+		}
 
+		private static bool HausPfadesucher(int Wuerfel, int X, int Y)
+		{
+			if (Wuerfel == 0)
+			{
+				Board[X][Y].IsAusgewaehlt = true;
+				return true;
+			}
+			else if (Wuerfel == wuerfelzahl)
+			{
+				AusgewaehltZurücksetzen();
+				Board[X][Y].IsUrsprung = true;
+			}
+			if(Board[X][Y].Color != Color.Empty || TupleEqual(Board[X][Y].NextField, (-1, -1)))
+			{
+				return false;
+			}
+			else
+			{
+				return HausPfadesucher(Wuerfel - 1, Board[X][Y].NextField.Item1, Board[X][Y].NextField.Item2);
+			}
 		}
 
 		private static void SetField(int X, int Y)
@@ -326,6 +370,7 @@ namespace MenschAergereDichNichtLogik
 					Board[StandardBoard[0].Item1][StandardBoard[0].Item2].NextField = (StandardBoard[1].Item1, StandardBoard[1].Item2);
 
 					NextFieldFinder(StandardBoard[1].Item1, StandardBoard[1].Item2);
+					HouseNextFieldFinder();
 
 					GameStarted = true;
 				}
@@ -386,7 +431,101 @@ namespace MenschAergereDichNichtLogik
 
 				return;
 			}
+
 		}
+
+		private static void HouseNextFieldFinder()
+		{
+
+			foreach (KeyValuePair<Color, ((int, int), (int, int))> valuePair in HouseEntrypoints)
+			{
+				HouseNextFieldfinder_Inner(valuePair.Value.Item2.Item1, valuePair.Value.Item2.Item2);
+			}
+		}
+
+		private static void	HouseNextFieldfinder_Inner(int X, int Y)
+		{
+			if (TupleEqual(Board[X][Y].NextField, (-1, -1)))
+			{
+				if (X - 1 >= 0)
+				{
+					if (Board[X - 1][Y] != null && TupleEqual(Board[X - 1][Y].NextField, (X, Y)) == false && Board[X - 1][Y] is FinishField)
+					{
+						Board[X][Y].NextField = (X - 1, Y);
+
+						foreach (KeyValuePair<Color, (int, int)> valuepair in HouseEndPoints)
+						{
+							if (valuepair.Value.Item1 == X - 1 && valuepair.Value.Item2 == Y)
+							{
+								return;
+							}
+						}
+						HouseNextFieldfinder_Inner(X - 1, Y);
+						return;
+					}
+				}
+				if (X + 1 <= 10)
+				{
+					if (Board[X + 1][Y] != null && TupleEqual(Board[X + 1][Y].NextField, (X, Y)) == false && Board[X + 1][Y] is FinishField)
+					{
+						Board[X][Y].NextField = (X + 1, Y);
+
+
+						foreach (KeyValuePair<Color, (int, int)> valuepair in HouseEndPoints)
+						{
+							if (valuepair.Value.Item1 == X + 1 && valuepair.Value.Item2 == Y)
+							{
+								return;
+							}
+						}
+						HouseNextFieldfinder_Inner(X + 1, Y);
+						return;
+
+					}
+
+				}
+				if (Y - 1 >= 0)
+				{
+					if (Board[X][Y - 1] != null && TupleEqual(Board[X][Y - 1].NextField, (X, Y)) == false && Board[X][Y - 1] is FinishField)
+					{
+						Board[X][Y].NextField = (X, Y - 1);
+
+
+						foreach (KeyValuePair<Color, (int, int)> valuepair in HouseEndPoints)
+						{
+							if (valuepair.Value.Item1 == X && valuepair.Value.Item2 == Y - 1)
+							{
+								return;
+							}
+						}
+						HouseNextFieldfinder_Inner(X, Y - 1);
+						return;
+					}
+
+				}
+				if (Y + 1 <= 10)
+				{
+					if (Board[X][Y + 1] != null && TupleEqual(Board[X][Y + 1].NextField, (X, Y)) == false && Board[X][Y + 1] is FinishField)
+					{
+						Board[X][Y].NextField = (X, Y + 1);
+
+
+						foreach (KeyValuePair<Color, (int, int)> valuepair in HouseEndPoints)
+						{
+							if (valuepair.Value.Item1 == X && valuepair.Value.Item2 == Y + 1)
+							{
+								return;
+							}
+						}
+						HouseNextFieldfinder_Inner(X, Y + 1);
+						return;
+
+					}
+
+				}
+			}
+		}
+	
 		#endregion
 
 		/// <summary>
