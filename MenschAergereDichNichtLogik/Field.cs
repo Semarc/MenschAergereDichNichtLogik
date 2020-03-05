@@ -30,7 +30,7 @@ namespace MenschAergereDichNichtLogik
 
 	public class FinishField : Field
 	{
-		internal FinishField(Color FinishPointColor, int index)
+		internal FinishField(Color FinishPointColor, int index) : base()
 		{
 			this.FinishPointColor = FinishPointColor;
 			this.index = index;

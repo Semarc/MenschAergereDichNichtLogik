@@ -148,7 +148,7 @@ namespace MenschAergereDichNichtLogik
 			get { return _CurrentPlayerIndex; }
 			private set
 			{
-				if (_CurrentPlayerIndex == players.Count - 1)
+				if (_CurrentPlayerIndex == PlayerList.Count - 1)
 				{
 					_CurrentPlayerIndex = 0;
 				}
@@ -162,7 +162,7 @@ namespace MenschAergereDichNichtLogik
 		/// <summary>
 		/// Die Liste aller Spieler
 		/// </summary>
-		public static List<Player> players { get; private set; } = new List<Player>();
+		public static List<Player> PlayerList { get; private set; } = new List<Player>();
 
 		#region Fieldclick
 		/// <summary>
@@ -170,13 +170,23 @@ namespace MenschAergereDichNichtLogik
 		/// </summary>
 		/// <param name="X"></param>
 		/// <param name="Y"></param>
-		public static void FieldClick(int X, int Y)
+		public static bool FieldClick(int X, int Y)
 		{
 			if (GameStarted && Board[X][Y] != null)
 			{
 				if (Board[X][Y] is FinishField)
 				{
-
+					//Wenn eine Figur gesetzt werden soll
+					if (Board[X][Y].IsAusgewaehlt && UebergabeFarbe != Color.Empty)
+					{
+						SetField(X, Y);
+						return true;
+					}
+					else if (Board[X][Y].Color == PlayerList[CurrentPlayerIndex].Color)
+					{
+						AusgewaehltZurücksetzen();
+						return HausPfadesucher(wuerfelzahl, X, Y);
+					}
 				}
 				else if (Board[X][Y] is Field)
 				{
@@ -184,14 +194,20 @@ namespace MenschAergereDichNichtLogik
 					if (Board[X][Y].IsAusgewaehlt && UebergabeFarbe != Color.Empty)
 					{
 						SetField(X, Y);
+						return true;
 					}
 					//Wenn eine (andere) Figur des gleichen Spielers ausgewählt werden soll
-					else if (Board[X][Y].Color == players[CurrentPlayerIndex].Color)
+					else if (Board[X][Y].Color == PlayerList[CurrentPlayerIndex].Color)
 					{
 						AusgewaehltZurücksetzen();
-						Pfadesucher(wuerfelzahl, X, Y);
+						return Pfadesucher(wuerfelzahl, X, Y);
 					}
 				}
+				return false;
+			}
+			else
+			{
+				return false;
 			}
 		}
 
@@ -210,12 +226,12 @@ namespace MenschAergereDichNichtLogik
 				AusgewaehltZurücksetzen();
 				Board[X][Y].IsUrsprung = true;
 			}
-			if (HouseEntrypoints[players[CurrentPlayerIndex].Color].Item1.Item1 == X && HouseEntrypoints[players[CurrentPlayerIndex].Color].Item1.Item2 == Y)
+			if (HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item1.Item1 == X && HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item1.Item2 == Y)
 			{
-				return HausPfadesucher(Wuerfel - 1, HouseEntrypoints[players[CurrentPlayerIndex].Color].Item2.Item1, HouseEntrypoints[players[CurrentPlayerIndex].Color].Item2.Item2);
+				return HausPfadesucher(Wuerfel - 1, HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item2.Item1, HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item2.Item2);
 			}
-			Pfadesucher(Wuerfel - 1, Board[X][Y].NextField.Item1, Board[X][Y].NextField.Item2);
-			
+			return Pfadesucher(Wuerfel - 1, Board[X][Y].NextField.Item1, Board[X][Y].NextField.Item2);
+
 		}
 
 		private static bool HausPfadesucher(int Wuerfel, int X, int Y)
@@ -230,7 +246,7 @@ namespace MenschAergereDichNichtLogik
 				AusgewaehltZurücksetzen();
 				Board[X][Y].IsUrsprung = true;
 			}
-			if(Board[X][Y].Color != Color.Empty || TupleEqual(Board[X][Y].NextField, (-1, -1)))
+			if (Board[X][Y].Color != Color.Empty || TupleEqual(Board[X][Y].NextField, (-1, -1)))
 			{
 				return false;
 			}
@@ -245,7 +261,7 @@ namespace MenschAergereDichNichtLogik
 			//Wenn eine Figur geschlagen wird
 			if (Board[X][Y].Color != Color.Empty)
 			{
-				foreach (Player player in players)
+				foreach (Player player in PlayerList)
 				{
 					if (player.Color == Board[X][Y].Color)
 					{
@@ -297,7 +313,7 @@ namespace MenschAergereDichNichtLogik
 		/// <summary>
 		/// Methode, die zum aufrufen des Würfels aufgerufen werden soll
 		/// </summary>
-		public static void DiceKlick()
+		public static bool DiceKlick()
 		{
 			if (GameStarted)
 			{
@@ -307,6 +323,7 @@ namespace MenschAergereDichNichtLogik
 				}
 
 			}
+
 		}
 		#endregion
 
@@ -322,7 +339,7 @@ namespace MenschAergereDichNichtLogik
 			{
 
 
-				if (HausColor == players[CurrentPlayerIndex].Color)
+				if (HausColor == PlayerList[CurrentPlayerIndex].Color)
 				{
 
 				}
@@ -443,7 +460,7 @@ namespace MenschAergereDichNichtLogik
 			}
 		}
 
-		private static void	HouseNextFieldfinder_Inner(int X, int Y)
+		private static void HouseNextFieldfinder_Inner(int X, int Y)
 		{
 			if (TupleEqual(Board[X][Y].NextField, (-1, -1)))
 			{
@@ -525,7 +542,7 @@ namespace MenschAergereDichNichtLogik
 				}
 			}
 		}
-	
+
 		#endregion
 
 		/// <summary>
