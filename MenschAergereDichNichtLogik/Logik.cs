@@ -42,6 +42,10 @@ namespace MenschAergereDichNichtLogik
 		/// </summary>
 		public static int wuerfelzahl { get; private set; }
 
+		/// <summary>
+		/// Speichert, wei oft schon gewürfelt wurde, wenn man dreimal Würelbn darf, weil alle Puppen im haus sind
+		/// </summary>
+		private static int AnzahlGeuerfelt;
 
 		#region Gamestart Information
 		private static List<(int, int)> StandardBoard = new List<(int, int)>
@@ -184,7 +188,7 @@ namespace MenschAergereDichNichtLogik
 					}
 					else if (Board[X][Y].Color == PlayerList[CurrentPlayerIndex].Color)
 					{
-						AusgewaehltZurücksetzen();
+						AusgewaehltZuruecksetzen();
 						return HausPfadesucher(wuerfelzahl, X, Y);
 					}
 				}
@@ -199,7 +203,7 @@ namespace MenschAergereDichNichtLogik
 					//Wenn eine (andere) Figur des gleichen Spielers ausgewählt werden soll
 					else if (Board[X][Y].Color == PlayerList[CurrentPlayerIndex].Color)
 					{
-						AusgewaehltZurücksetzen();
+						AusgewaehltZuruecksetzen();
 						return Pfadesucher(wuerfelzahl, X, Y);
 					}
 				}
@@ -223,7 +227,7 @@ namespace MenschAergereDichNichtLogik
 			}
 			else if (Wuerfel == wuerfelzahl)
 			{
-				AusgewaehltZurücksetzen();
+				AusgewaehltZuruecksetzen();
 				Board[X][Y].IsUrsprung = true;
 			}
 			if (HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item1.Item1 == X && HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item1.Item2 == Y)
@@ -243,7 +247,7 @@ namespace MenschAergereDichNichtLogik
 			}
 			else if (Wuerfel == wuerfelzahl)
 			{
-				AusgewaehltZurücksetzen();
+				AusgewaehltZuruecksetzen();
 				Board[X][Y].IsUrsprung = true;
 			}
 			if (Board[X][Y].Color != Color.Empty || TupleEqual(Board[X][Y].NextField, (-1, -1)))
@@ -283,10 +287,10 @@ namespace MenschAergereDichNichtLogik
 			}
 			wuerfelzahl = 0;
 
-			AusgewaehltZurücksetzen();
+			AusgewaehltZuruecksetzen();
 		}
 
-		private static void AusgewaehltZurücksetzen()
+		private static void AusgewaehltZuruecksetzen()
 		{
 			//Setzt die Spielsteine Zurück
 			for (int i = 0; i < Board.Length; i++)
@@ -315,16 +319,45 @@ namespace MenschAergereDichNichtLogik
 		/// </summary>
 		public static bool DiceKlick()
 		{
-			if (GameStarted)
+			if (GameStarted && wuerfelzahl == 0)
 			{
-				if (wuerfelzahl == 0)
+				wuerfelzahl = randomnumber.Next(1, 7);
+
+				if (PlayerList[CurrentPlayerIndex].NumberHome < 4)
 				{
-					wuerfelzahl = randomnumber.Next(1, 7);
+					AnzahlGeuerfelt = 0;
+					//Prüfen, ob ein Zug möglich ist
+					for (int i = 0; i < Board.Length; i++)
+					{
+						for (int j = 0; j < Board[i].Length; j++)
+						{
+							if (Board[i][j] != null && Board[i][j].Color == PlayerList[CurrentPlayerIndex].Color)
+							{
+								if (Pfadesucher(wuerfelzahl, i, j))
+								{
+									AusgewaehltZuruecksetzen();
+									return true;
+								}
+							}
+						}
+					}
 				}
+				else
+				{
+					AnzahlGeuerfelt++;
 
+					if(AnzahlGeuerfelt >= 3)
+					{
+						AnzahlGeuerfelt = 0;
+						CurrentPlayerIndex++;
+						return false;
+					}
+				}
 			}
-
+			AusgewaehltZuruecksetzen();
+			return false;
 		}
+
 		#endregion
 
 		#region Homeclick
