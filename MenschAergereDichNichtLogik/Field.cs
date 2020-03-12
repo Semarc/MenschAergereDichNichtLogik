@@ -7,11 +7,11 @@ namespace MenschAergereDichNichtLogik
 {
 	public enum Color
 	{
-		Red,
-		Black,
-		Yellow,
-		Green,
-		Empty
+		Empty = 0,
+		Red = 1,
+		Black = 2,
+		Yellow = 3,
+		Green = 4
 	}
 
 	public class Field

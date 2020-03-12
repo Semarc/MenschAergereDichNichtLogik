@@ -8,16 +8,52 @@ namespace MenschAergereDichNichtLogik
 {
 	public class Player : INotifyPropertyChanged
 	{
-		private int _numberDiceRolls;
-		private int _numberHome;
 
-		internal Player() { }
+		internal Player(string Name, Color Color)
+		{
+			this.Name = Name;
+			this.Color = Color;
+			_numberHome = 4;
+			_numberDiceRolls = 0;
+		}
 
 
 		public Color Color { get; internal set; }
 		public string Name { get; internal set; }
-		public int NumberHome { get => _numberHome; internal set => _numberHome = value; }
-		public int NumberDiceRolls { get => _numberDiceRolls; internal set => _numberDiceRolls = value; }
+
+		private int _numberHome;
+		public int NumberHome
+		{
+			get
+			{
+				return _numberHome;
+			}
+			internal set
+			{
+				if (value != _numberHome)
+				{
+					_numberHome = value;
+					NotifyPropertyChanged();
+				}
+			}
+		}
+
+		private int _numberDiceRolls;
+		public int NumberDiceRolls
+		{
+			get
+			{
+				return _numberDiceRolls;
+			}
+			internal set
+			{
+				if (value != NumberDiceRolls)
+				{
+					_numberDiceRolls = value;
+					NotifyPropertyChanged();
+				}
+			}
+		}
 
 		public event PropertyChangedEventHandler PropertyChanged;
 

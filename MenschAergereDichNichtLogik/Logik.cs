@@ -32,6 +32,14 @@ namespace MenschAergereDichNichtLogik
 			[Color.Yellow] = (4, 5)
 		};
 
+		private static readonly Dictionary<Color, (int, int)> StartPoints = new Dictionary<Color, (int, int)>()
+		{
+			[Color.Green] = (6, 10),
+			[Color.Red] = (10, 4),
+			[Color.Black] = (4, 0),
+			[Color.Yellow] = (0, 6)
+		};
+
 		/// <summary>
 		/// Die Farbe, die als nächstes gesetzt werden soll
 		/// </summary>
@@ -319,55 +327,45 @@ namespace MenschAergereDichNichtLogik
 		/// </summary>
 		public static bool DiceKlick()
 		{
-			if(PlayerList[CurrentPlayerIndex].NumberHome == 4)
+			if (GameStarted)
 			{
-				PlayerList[CurrentPlayerIndex].NumberDiceRolls++;
-				if(PlayerList[CurrentPlayerIndex].NumberDiceRolls >= 3)
+				if (Wuerfelzahl == 0)
 				{
-					PlayerList[CurrentPlayerIndex].NumberDiceRolls = 0;
-					CurrentPlayerIndex = 99999;
-				}
-			}
-			else
-			{
-				PlayerList[CurrentPlayerIndex].NumberDiceRolls = 0;
-			}
-			if (GameStarted && Wuerfelzahl == 0)
-			{
-				Wuerfelzahl = randomnumber.Next(1, 7);
+					Wuerfelzahl = randomnumber.Next(1, 7);
 
-				if (PlayerList[CurrentPlayerIndex].NumberHome < 4)
-				{
-					AnzahlGeuerfelt = 0;
-					//Prüfen, ob ein Zug möglich ist
-					for (int i = 0; i < Board.Length; i++)
+					if (PlayerList[CurrentPlayerIndex].NumberHome < 4)
 					{
-						for (int j = 0; j < Board[i].Length; j++)
+						AnzahlGeuerfelt = 0;
+						//Prüfen, ob ein Zug möglich ist
+						for (int i = 0; i < Board.Length; i++)
 						{
-							if (Board[i][j] != null && Board[i][j].Color == PlayerList[CurrentPlayerIndex].Color)
+							for (int j = 0; j < Board[i].Length; j++)
 							{
-								if (Pfadesucher(Wuerfelzahl, i, j))
+								if (Board[i][j] != null && Board[i][j].Color == PlayerList[CurrentPlayerIndex].Color)
 								{
-									AusgewaehltZuruecksetzen();
-									return true;
+									if (Pfadesucher(Wuerfelzahl, i, j))
+									{
+										AusgewaehltZuruecksetzen();
+										return true;
+									}
 								}
 							}
 						}
 					}
-				}
-				else
-				{
-					AnzahlGeuerfelt++;
-
-					if(AnzahlGeuerfelt >= 3)
+					else
 					{
-						AnzahlGeuerfelt = 0;
-						CurrentPlayerIndex++;
-						return false;
+						AnzahlGeuerfelt++;
+
+						if (AnzahlGeuerfelt >= 3)
+						{
+							AnzahlGeuerfelt = 0;
+							CurrentPlayerIndex++;
+							return false;
+						}
 					}
 				}
+				AusgewaehltZuruecksetzen();
 			}
-			AusgewaehltZuruecksetzen();
 			return false;
 		}
 
@@ -387,7 +385,12 @@ namespace MenschAergereDichNichtLogik
 
 				if (HausColor == PlayerList[CurrentPlayerIndex].Color)
 				{
-
+					if(PlayerList[CurrentPlayerIndex].NumberHome > 0)
+					{
+						PlayerList[CurrentPlayerIndex].NumberHome--;
+						UebergabeFarbe = PlayerList[CurrentPlayerIndex].Color;
+						SetField(StartPoints[PlayerList[CurrentPlayerIndex].Color].Item1, StartPoints[PlayerList[CurrentPlayerIndex].Color].Item2);
+					}
 				}
 				else
 				{
@@ -435,6 +438,10 @@ namespace MenschAergereDichNichtLogik
 					NextFieldFinder(StandardBoard[1].Item1, StandardBoard[1].Item2);
 					HouseNextFieldFinder();
 
+					for (int i = 0; i < PlayerNames.Count; i++)
+					{
+						PlayerList.Add(new Player(PlayerNames[i], (Color)i + 1));
+					}
 					GameStarted = true;
 				}
 			}
