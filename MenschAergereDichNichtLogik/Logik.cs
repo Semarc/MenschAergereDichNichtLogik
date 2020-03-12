@@ -16,7 +16,7 @@ namespace MenschAergereDichNichtLogik
 		/// <summary>
 		/// Gibt an, welche Punkte für welche Farbe die Eingänge zum Haus sind
 		/// </summary>
-		private static Dictionary<Color, ((int, int), (int, int))> HouseEntrypoints = new Dictionary<Color, ((int, int), (int, int))>()
+		private static readonly Dictionary<Color, ((int, int), (int, int))> HouseEntrypoints = new Dictionary<Color, ((int, int), (int, int))>()
 		{
 			[Color.Green] = ((5, 10), (5, 9)),
 			[Color.Red] = ((10, 5), (9, 5)),
@@ -24,7 +24,7 @@ namespace MenschAergereDichNichtLogik
 			[Color.Yellow] = ((0, 5), (1, 5)),
 		};
 
-		private static Dictionary<Color, (int, int)> HouseEndPoints = new Dictionary<Color, (int, int)>()
+		private static readonly Dictionary<Color, (int, int)> HouseEndPoints = new Dictionary<Color, (int, int)>()
 		{
 			[Color.Green] = (5, 6),
 			[Color.Red] = (6, 5),
@@ -40,7 +40,7 @@ namespace MenschAergereDichNichtLogik
 		/// <summary>
 		/// Die Würfelzahl
 		/// </summary>
-		public static int wuerfelzahl { get; private set; }
+		public static int Wuerfelzahl { get; private set; }
 
 		/// <summary>
 		/// Speichert, wei oft schon gewürfelt wurde, wenn man dreimal Würelbn darf, weil alle Puppen im haus sind
@@ -48,7 +48,7 @@ namespace MenschAergereDichNichtLogik
 		private static int AnzahlGeuerfelt;
 
 		#region Gamestart Information
-		private static List<(int, int)> StandardBoard = new List<(int, int)>
+		private static readonly List<(int, int)> StandardBoard = new List<(int, int)>
 		{
 			(4, 10),
 			(5, 10),
@@ -101,7 +101,7 @@ namespace MenschAergereDichNichtLogik
 			(5, 0),
 			(6, 0),
 		};
-		private static List<((int, int), int, Color)> FinishPoints = new List<((int, int), int, Color)>()
+		private static readonly List<((int, int), int, Color)> FinishPoints = new List<((int, int), int, Color)>()
 		{
 			((5, 9), 0, Color.Green),
 			((5, 8), 1, Color.Green),
@@ -189,7 +189,7 @@ namespace MenschAergereDichNichtLogik
 					else if (Board[X][Y].Color == PlayerList[CurrentPlayerIndex].Color)
 					{
 						AusgewaehltZuruecksetzen();
-						return HausPfadesucher(wuerfelzahl, X, Y);
+						return HausPfadesucher(Wuerfelzahl, X, Y);
 					}
 				}
 				else if (Board[X][Y] is Field)
@@ -204,7 +204,7 @@ namespace MenschAergereDichNichtLogik
 					else if (Board[X][Y].Color == PlayerList[CurrentPlayerIndex].Color)
 					{
 						AusgewaehltZuruecksetzen();
-						return Pfadesucher(wuerfelzahl, X, Y);
+						return Pfadesucher(Wuerfelzahl, X, Y);
 					}
 				}
 				return false;
@@ -225,7 +225,7 @@ namespace MenschAergereDichNichtLogik
 				Board[X][Y].IsAusgewaehlt = true;
 				return true;
 			}
-			else if (Wuerfel == wuerfelzahl)
+			else if (Wuerfel == Wuerfelzahl)
 			{
 				AusgewaehltZuruecksetzen();
 				Board[X][Y].IsUrsprung = true;
@@ -245,7 +245,7 @@ namespace MenschAergereDichNichtLogik
 				Board[X][Y].IsAusgewaehlt = true;
 				return true;
 			}
-			else if (Wuerfel == wuerfelzahl)
+			else if (Wuerfel == Wuerfelzahl)
 			{
 				AusgewaehltZuruecksetzen();
 				Board[X][Y].IsUrsprung = true;
@@ -281,11 +281,11 @@ namespace MenschAergereDichNichtLogik
 			UebergabeFarbe = Color.Empty;
 
 			//Wenn keine Sechs -> Nächster Spieler ist dran
-			if (wuerfelzahl != 6)
+			if (Wuerfelzahl != 6)
 			{
 				CurrentPlayerIndex--;
 			}
-			wuerfelzahl = 0;
+			Wuerfelzahl = 0;
 
 			AusgewaehltZuruecksetzen();
 		}
@@ -319,9 +319,22 @@ namespace MenschAergereDichNichtLogik
 		/// </summary>
 		public static bool DiceKlick()
 		{
-			if (GameStarted && wuerfelzahl == 0)
+			if(PlayerList[CurrentPlayerIndex].NumberHome == 4)
 			{
-				wuerfelzahl = randomnumber.Next(1, 7);
+				PlayerList[CurrentPlayerIndex].NumberDiceRolls++;
+				if(PlayerList[CurrentPlayerIndex].NumberDiceRolls >= 3)
+				{
+					PlayerList[CurrentPlayerIndex].NumberDiceRolls = 0;
+					CurrentPlayerIndex = 99999;
+				}
+			}
+			else
+			{
+				PlayerList[CurrentPlayerIndex].NumberDiceRolls = 0;
+			}
+			if (GameStarted && Wuerfelzahl == 0)
+			{
+				Wuerfelzahl = randomnumber.Next(1, 7);
 
 				if (PlayerList[CurrentPlayerIndex].NumberHome < 4)
 				{
@@ -333,7 +346,7 @@ namespace MenschAergereDichNichtLogik
 						{
 							if (Board[i][j] != null && Board[i][j].Color == PlayerList[CurrentPlayerIndex].Color)
 							{
-								if (Pfadesucher(wuerfelzahl, i, j))
+								if (Pfadesucher(Wuerfelzahl, i, j))
 								{
 									AusgewaehltZuruecksetzen();
 									return true;

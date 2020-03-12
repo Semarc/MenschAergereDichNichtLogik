@@ -33,10 +33,10 @@ namespace MenschAergereDichNichtLogik
 		internal FinishField(Color FinishPointColor, int index) : base()
 		{
 			this.FinishPointColor = FinishPointColor;
-			this.index = index;
+			this.Index = index;
 		}
 
-		public int index { get; internal set; }
+		public int Index { get; internal set; }
 		public Color FinishPointColor { get; internal set; }
 	}
 
