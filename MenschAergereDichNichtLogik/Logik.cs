@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Runtime.InteropServices;
 
 namespace MenschAergereDichNichtLogik
 {
@@ -16,28 +17,31 @@ namespace MenschAergereDichNichtLogik
 		/// <summary>
 		/// Gibt an, welche Punkte für welche Farbe die Eingänge zum Haus sind
 		/// </summary>
-		private static readonly Dictionary<Color, ((int, int), (int, int))> HouseEntrypoints = new Dictionary<Color, ((int, int), (int, int))>()
+		private static readonly Dictionary<Color, (Point, Point)> HouseEntrypoints = new Dictionary<Color, (Point, Point)>()
 		{
-			[Color.Green] = ((5, 10), (5, 9)),
-			[Color.Red] = ((10, 5), (9, 5)),
-			[Color.Black] = ((5, 0), (5, 1)),
-			[Color.Yellow] = ((0, 5), (1, 5)),
+			[Color.Green] = (new Point(5, 10), new Point(5, 9)),
+			[Color.Red] = (new Point(10, 5), new Point(9, 5)),
+			[Color.Black] = (new Point(5, 0), new Point(5, 1)),
+			[Color.Yellow] = (new Point(0, 5), new Point(1, 5)),
 		};
 
-		private static readonly Dictionary<Color, (int, int)> HouseEndPoints = new Dictionary<Color, (int, int)>()
+		private static readonly Dictionary<Color, Point> HouseEndPoints = new Dictionary<Color, Point>()
 		{
-			[Color.Green] = (5, 6),
-			[Color.Red] = (6, 5),
-			[Color.Black] = (5, 4),
-			[Color.Yellow] = (4, 5)
+			[Color.Green] = new Point(5, 6),
+			[Color.Red] = new Point(6, 5),
+			[Color.Black] = new Point(5, 4),
+			[Color.Yellow] = new Point(4, 5)
 		};
 
-		private static readonly Dictionary<Color, (int, int)> StartPoints = new Dictionary<Color, (int, int)>()
+		/// <summary>
+		/// Gibt die Felder an, auf die neue Steine Kommen, nachdem sie aus dem Haus gekommen sind
+		/// </summary>
+		private static readonly Dictionary<Color, Point> StartPoints = new Dictionary<Color, Point>()
 		{
-			[Color.Green] = (6, 10),
-			[Color.Red] = (10, 4),
-			[Color.Black] = (4, 0),
-			[Color.Yellow] = (0, 6)
+			[Color.Green] = new Point(6, 10),
+			[Color.Red] = new Point(10, 4),
+			[Color.Black] = new Point(4, 0),
+			[Color.Yellow] = new Point(0, 6)
 		};
 
 		/// <summary>
@@ -56,80 +60,80 @@ namespace MenschAergereDichNichtLogik
 		private static int AnzahlGeuerfelt;
 
 		#region Gamestart Information
-		private static readonly List<(int, int)> StandardBoard = new List<(int, int)>
+		private static readonly List<Point> StandardBoard = new List<Point>
 		{
-			(4, 10),
-			(5, 10),
-			(6, 10),
+			new Point(4, 10),
+			new Point(5, 10),
+			new Point(6, 10),
 
-			(4, 9),
-			(6, 9),
+			new Point(4, 9),
+			new Point(6, 9),
 
-			(4, 8),
-			(6, 8),
+			new Point(4, 8),
+			new Point(6, 8),
 
-			(4, 7),
-			(6, 7),
+			new Point(4, 7),
+			new Point(6, 7),
 
-			(0, 6),
-			(1, 6),
-			(2, 6),
-			(3, 6),
-			(4, 6),
-			(6, 6),
-			(7, 6),
-			(8, 6),
-			(9, 6),
-			(10, 6),
+			new Point(0, 6),
+			new Point(1, 6),
+			new Point(2, 6),
+			new Point(3, 6),
+			new Point(4, 6),
+			new Point(6, 6),
+			new Point(7, 6),
+			new Point(8, 6),
+			new Point(9, 6),
+			new Point(10, 6),
 
-			(0, 5),
-			(10, 5),
+			new Point(0, 5),
+			new Point(10, 5),
 
-			(0, 4),
-			(1, 4),
-			(2, 4),
-			(3, 4),
-			(4, 4),
-			(6, 4),
-			(7, 4),
-			(8, 4),
-			(9, 4),
-			(10, 4),
+			new Point(0, 4),
+			new Point(1, 4),
+			new Point(2, 4),
+			new Point(3, 4),
+			new Point(4, 4),
+			new Point(6, 4),
+			new Point(7, 4),
+			new Point(8, 4),
+			new Point(9, 4),
+			new Point(10, 4),
 
-			(4, 3),
-			(6, 3),
+			new Point(4, 3),
+			new Point(6, 3),
 
-			(4, 2),
-			(6, 2),
+			new Point(4, 2),
+			new Point(6, 2),
 
-			(4, 1),
-			(6, 1),
+			new Point(4, 1),
+			new Point(6, 1),
 
-			(4, 0),
-			(5, 0),
-			(6, 0),
+			new Point(4, 0),
+			new Point(5, 0),
+			new Point(6, 0),
 		};
-		private static readonly List<((int, int), int, Color)> FinishPoints = new List<((int, int), int, Color)>()
+		private static readonly List<(Point, int, Color)> FinishPoints = new List<(Point, int, Color)>()
 		{
-			((5, 9), 0, Color.Green),
-			((5, 8), 1, Color.Green),
-			((5, 7), 2, Color.Green),
-			((5, 6), 3, Color.Green),
+			(new Point(5, 9), 0, Color.Green),
+			(new Point(5, 8), 1, Color.Green),
+			(new Point(5, 7), 2, Color.Green),
+			(new Point(5, 6), 3, Color.Green),
 
-			((1, 5), 0, Color.Red),
-			((2, 5), 1, Color.Red),
-			((3, 5), 2, Color.Red),
-			((4, 5), 3, Color.Red),
+			(new Point(1, 5), 0, Color.Red),
+			(new Point(2, 5), 1, Color.Red),
+			(new Point(3, 5), 2, Color.Red),
+			(new Point(4, 5), 3, Color.Red),
 
-			((6, 5), 3, Color.Yellow),
-			((7, 5), 2, Color.Yellow),
-			((8, 5), 1, Color.Yellow),
-			((9, 5), 0, Color.Yellow),
+			(new Point(6, 5), 3, Color.Yellow),
+			(new Point(7, 5), 2, Color.Yellow),
+			(new Point(8, 5), 1, Color.Yellow),
+			(new Point(9, 5), 0, Color.Yellow),
 
-			((5, 4), 3, Color.Black),
-			((5, 3), 2, Color.Black),
-			((5, 2), 1, Color.Black),
-			((5, 1), 0, Color.Black)
+			(new Point(5, 4), 3, Color.Black),
+			(new Point(5, 3), 2, Color.Black),
+			(new Point(5, 2), 1, Color.Black),
+			(new Point(5, 1), 0, Color.Black)
 		};
 		#endregion
 
@@ -239,11 +243,11 @@ namespace MenschAergereDichNichtLogik
 				AusgewaehltZuruecksetzen();
 				Board[X][Y].IsUrsprung = true;
 			}
-			if (HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item1.Item1 == X && HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item1.Item2 == Y)
+			if (HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item1.X == X && HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item1.Y == Y)
 			{
-				return HausPfadesucher(Wuerfel - 1, HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item2.Item1, HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item2.Item2);
+				return HausPfadesucher(Wuerfel - 1, HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item2.X, HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item2.Y);
 			}
-			return Pfadesucher(Wuerfel - 1, Board[X][Y].NextField.Item1, Board[X][Y].NextField.Item2);
+			return Pfadesucher(Wuerfel - 1, Board[X][Y].NextField.X, Board[X][Y].NextField.Y);
 
 		}
 
@@ -259,13 +263,13 @@ namespace MenschAergereDichNichtLogik
 				AusgewaehltZuruecksetzen();
 				Board[X][Y].IsUrsprung = true;
 			}
-			if (Board[X][Y].Color != Color.Empty || TupleEqual(Board[X][Y].NextField, (-1, -1)))
+			if (Board[X][Y].Color != Color.Empty || Board[X][Y].NextField == new Point(-1, -1))
 			{
 				return false;
 			}
 			else
 			{
-				return HausPfadesucher(Wuerfel - 1, Board[X][Y].NextField.Item1, Board[X][Y].NextField.Item2);
+				return HausPfadesucher(Wuerfel - 1, Board[X][Y].NextField.X, Board[X][Y].NextField.Y);
 			}
 		}
 
@@ -390,7 +394,7 @@ namespace MenschAergereDichNichtLogik
 					{
 						PlayerList[CurrentPlayerIndex].NumberHome--;
 						UebergabeFarbe = PlayerList[CurrentPlayerIndex].Color;
-						SetField(StartPoints[PlayerList[CurrentPlayerIndex].Color].Item1, StartPoints[PlayerList[CurrentPlayerIndex].Color].Item2);
+						SetField(StartPoints[PlayerList[CurrentPlayerIndex].Color].X, StartPoints[PlayerList[CurrentPlayerIndex].Color].Y);
 					}
 				}
 				else
@@ -422,21 +426,21 @@ namespace MenschAergereDichNichtLogik
 				else
 				{
 					//Hinzufügen der Normalen Punkte zum Brett
-					foreach ((int, int) point in StandardBoard)
+					foreach (Point point in StandardBoard)
 					{
-						Board[point.Item1][point.Item2] = new Field();
+						Board[point.X][point.Y] = new Field();
 					}
 
 					//Hinzufügen der ZielPunkte zum Brett
-					foreach (((int, int), int, Color) Point in FinishPoints)
+					foreach ((Point, int, Color) point in FinishPoints)
 					{
-						Board[Point.Item1.Item1][Point.Item1.Item2] = new FinishField(Point.Item3, Point.Item2);
+						Board[point.Item1.X][point.Item1.Y] = new FinishField(point.Item3, point.Item2);
 					}
 
 					//Zuweisung des Nächsten Feldes für das erste Feld
-					Board[StandardBoard[0].Item1][StandardBoard[0].Item2].NextField = (StandardBoard[1].Item1, StandardBoard[1].Item2);
+					Board[StandardBoard[0].X][StandardBoard[0].Y].NextField = new Point(StandardBoard[1].X, StandardBoard[1].Y);
 
-					NextFieldFinder(StandardBoard[1].Item1, StandardBoard[1].Item2);
+					NextFieldFinder(StandardBoard[1].X, StandardBoard[1].Y);
 					HouseNextFieldFinder();
 
 					for (int i = 0; i < PlayerNames.Count; i++)
@@ -455,22 +459,22 @@ namespace MenschAergereDichNichtLogik
 		/// <param name="Y"></param>
 		private static void NextFieldFinder(int X, int Y)
 		{
-			if (TupleEqual(Board[X][Y].NextField, (-1, -1)))
+			if (Board[X][Y].NextField == new Point(-1, -1))
 			{
 				if (X - 1 >= 0)
 				{
-					if (Board[X - 1][Y] != null && TupleEqual(Board[X - 1][Y].NextField, (X, Y)) == false && Board[X - 1][Y] is FinishField == false)
+					if (Board[X - 1][Y] != null && Board[X - 1][Y].NextField == new Point(X, Y) == false && Board[X - 1][Y] is FinishField == false)
 					{
-						Board[X][Y].NextField = (X - 1, Y);
+						Board[X][Y].NextField = new Point(X - 1, Y);
 						NextFieldFinder(X - 1, Y);
 						return;
 					}
 				}
 				if (X + 1 <= 10)
 				{
-					if (Board[X + 1][Y] != null && TupleEqual(Board[X + 1][Y].NextField, (X, Y)) == false && Board[X + 1][Y] is FinishField == false)
+					if (Board[X + 1][Y] != null && Board[X + 1][Y].NextField == new Point(X, Y) == false && Board[X + 1][Y] is FinishField == false)
 					{
-						Board[X][Y].NextField = (X + 1, Y);
+						Board[X][Y].NextField = new Point(X + 1, Y);
 						NextFieldFinder(X + 1, Y);
 						return;
 
@@ -479,9 +483,9 @@ namespace MenschAergereDichNichtLogik
 				}
 				if (Y - 1 >= 0)
 				{
-					if (Board[X][Y - 1] != null && TupleEqual(Board[X][Y - 1].NextField, (X, Y)) == false && Board[X][Y - 1] is FinishField == false)
+					if (Board[X][Y - 1] != null && Board[X][Y - 1].NextField == new Point(X, Y) == false && Board[X][Y - 1] is FinishField == false)
 					{
-						Board[X][Y].NextField = (X, Y - 1);
+						Board[X][Y].NextField = new Point(X, Y - 1);
 						NextFieldFinder(X, Y - 1);
 						return;
 
@@ -490,9 +494,9 @@ namespace MenschAergereDichNichtLogik
 				}
 				if (Y + 1 <= 10)
 				{
-					if (Board[X][Y + 1] != null && TupleEqual(Board[X][Y + 1].NextField, (X, Y)) == false && Board[X][Y + 1] is FinishField == false)
+					if (Board[X][Y + 1] != null && Board[X][Y + 1].NextField == new Point(X, Y) == false && Board[X][Y + 1] is FinishField == false)
 					{
-						Board[X][Y].NextField = (X, Y + 1);
+						Board[X][Y].NextField = new Point(X, Y + 1);
 						NextFieldFinder(X, Y + 1);
 						return;
 
@@ -508,25 +512,25 @@ namespace MenschAergereDichNichtLogik
 		private static void HouseNextFieldFinder()
 		{
 
-			foreach (KeyValuePair<Color, ((int, int), (int, int))> valuePair in HouseEntrypoints)
+			foreach (KeyValuePair<Color, (Point, Point)> valuePair in HouseEntrypoints)
 			{
-				HouseNextFieldfinder_Inner(valuePair.Value.Item2.Item1, valuePair.Value.Item2.Item2);
+				HouseNextFieldfinder_Inner(valuePair.Value.Item2.X, valuePair.Value.Item2.Y);
 			}
 		}
 
 		private static void HouseNextFieldfinder_Inner(int X, int Y)
 		{
-			if (TupleEqual(Board[X][Y].NextField, (-1, -1)))
+			if (Board[X][Y].NextField == new Point(-1, -1))
 			{
 				if (X - 1 >= 0)
 				{
-					if (Board[X - 1][Y] != null && TupleEqual(Board[X - 1][Y].NextField, (X, Y)) == false && Board[X - 1][Y] is FinishField)
+					if (Board[X - 1][Y] != null && Board[X - 1][Y].NextField == new Point(X, Y) == false && Board[X - 1][Y] is FinishField)
 					{
-						Board[X][Y].NextField = (X - 1, Y);
+						Board[X][Y].NextField = new Point(X - 1, Y);
 
-						foreach (KeyValuePair<Color, (int, int)> valuepair in HouseEndPoints)
+						foreach (KeyValuePair<Color, Point> valuepair in HouseEndPoints)
 						{
-							if (valuepair.Value.Item1 == X - 1 && valuepair.Value.Item2 == Y)
+							if (valuepair.Value.X == X - 1 && valuepair.Value.Y == Y)
 							{
 								return;
 							}
@@ -537,14 +541,14 @@ namespace MenschAergereDichNichtLogik
 				}
 				if (X + 1 <= 10)
 				{
-					if (Board[X + 1][Y] != null && TupleEqual(Board[X + 1][Y].NextField, (X, Y)) == false && Board[X + 1][Y] is FinishField)
+					if (Board[X + 1][Y] != null && Board[X + 1][Y].NextField == new Point(X, Y) == false && Board[X + 1][Y] is FinishField)
 					{
-						Board[X][Y].NextField = (X + 1, Y);
+						Board[X][Y].NextField = new Point(X + 1, Y);
 
 
-						foreach (KeyValuePair<Color, (int, int)> valuepair in HouseEndPoints)
+						foreach (KeyValuePair<Color, Point> valuepair in HouseEndPoints)
 						{
-							if (valuepair.Value.Item1 == X + 1 && valuepair.Value.Item2 == Y)
+							if (valuepair.Value.X == X + 1 && valuepair.Value.Y == Y)
 							{
 								return;
 							}
@@ -557,14 +561,14 @@ namespace MenschAergereDichNichtLogik
 				}
 				if (Y - 1 >= 0)
 				{
-					if (Board[X][Y - 1] != null && TupleEqual(Board[X][Y - 1].NextField, (X, Y)) == false && Board[X][Y - 1] is FinishField)
+					if (Board[X][Y - 1] != null && Board[X][Y - 1].NextField == new Point(X, Y) == false && Board[X][Y - 1] is FinishField)
 					{
-						Board[X][Y].NextField = (X, Y - 1);
+						Board[X][Y].NextField = new Point(X, Y - 1);
 
 
-						foreach (KeyValuePair<Color, (int, int)> valuepair in HouseEndPoints)
+						foreach (KeyValuePair<Color, Point> valuepair in HouseEndPoints)
 						{
-							if (valuepair.Value.Item1 == X && valuepair.Value.Item2 == Y - 1)
+							if (valuepair.Value.X == X && valuepair.Value.Y == Y - 1)
 							{
 								return;
 							}
@@ -576,14 +580,14 @@ namespace MenschAergereDichNichtLogik
 				}
 				if (Y + 1 <= 10)
 				{
-					if (Board[X][Y + 1] != null && TupleEqual(Board[X][Y + 1].NextField, (X, Y)) == false && Board[X][Y + 1] is FinishField)
+					if (Board[X][Y + 1] != null && Board[X][Y + 1].NextField == new Point(X, Y) == false && Board[X][Y + 1] is FinishField)
 					{
-						Board[X][Y].NextField = (X, Y + 1);
+						Board[X][Y].NextField = new Point(X, Y + 1);
 
 
-						foreach (KeyValuePair<Color, (int, int)> valuepair in HouseEndPoints)
+						foreach (KeyValuePair<Color, Point> valuepair in HouseEndPoints)
 						{
-							if (valuepair.Value.Item1 == X && valuepair.Value.Item2 == Y + 1)
+							if (valuepair.Value.X == X && valuepair.Value.Y == Y + 1)
 							{
 								return;
 							}
@@ -598,16 +602,5 @@ namespace MenschAergereDichNichtLogik
 		}
 
 		#endregion
-
-		/// <summary>
-		/// Prüft, ob zwei Tupel von Typ (int, int) gleich sind
-		/// </summary>
-		/// <param name="tuple1"></param>
-		/// <param name="tuple2"></param>
-		/// <returns></returns>
-		private static bool TupleEqual((int, int) tuple1, (int, int) tuple2)
-		{
-			return tuple1.Item1 == tuple2.Item1 && tuple1.Item2 == tuple2.Item2;
-		}
 	}
 }
