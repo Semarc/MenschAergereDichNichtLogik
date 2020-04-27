@@ -290,7 +290,7 @@ namespace MenschAergereDichNichtLogik
 			}
 
 			Board[X][Y].Color = UebergabeFarbe;
-			Uebergabe.GeaenderteSpielpunkte.Add((X, Y));
+			Uebergabe.GeaenderteSpielpunkte.Add(new Point(X, Y));
 			UebergabeFarbe = Color.Empty;
 
 			//Wenn keine Sechs -> Nächster Spieler ist dran
@@ -315,7 +315,7 @@ namespace MenschAergereDichNichtLogik
 						Board[i][j].IsUrsprung = false;
 						if (Board[i][j].IsAusgewaehlt == true)
 						{
-							Uebergabe.GeaenderteSpielpunkte.Add((i, j));
+							Uebergabe.GeaenderteSpielpunkte.Add(new Point(i, j));
 							Board[i][j].IsAusgewaehlt = false;
 						}
 					}
