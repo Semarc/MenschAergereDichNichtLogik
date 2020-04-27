@@ -182,6 +182,7 @@ namespace MenschAergereDichNichtLogik
 		/// </summary>
 		/// <param name="X"></param>
 		/// <param name="Y"></param>
+		/// <returns><see langword="true"/>, wenn ein Zug möglich ist. <see langword="false"/>, wenn kein Zug möglich ist</returns>
 		public static bool FieldClick(int X, int Y)
 		{
 			if (GameStarted && Board[X][Y] != null)
@@ -410,13 +411,13 @@ namespace MenschAergereDichNichtLogik
 			if (GameStarted == false)
 			{
 				//Validierung der Liste
-				if (PlayerNames.Count > 4 || PlayerNames.Count < 1)
-				{
-					throw new ArgumentOutOfRangeException("PlayerNames", PlayerNames, "Die Liste muss zwischen 1 und 4 Namen enthalten");
-				}
-				else if (PlayerNames is null)
+				if (PlayerNames is null)
 				{
 					throw new NullReferenceException("Die Liste darf nicht null sein");
+				}
+				else if (PlayerNames.Count > 4 || PlayerNames.Count < 1)
+				{
+					throw new ArgumentOutOfRangeException("PlayerNames", PlayerNames, "Die Liste muss zwischen 1 und 4 Namen enthalten");
 				}
 				else
 				{
