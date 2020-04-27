@@ -6,8 +6,8 @@ using System.Text;
 
 namespace MenschAergereDichNichtLogik
 {
-	public class Player : INotifyPropertyChanged
-	{
+	public class Player 
+	{ 
 
 		internal Player(string Name, Color Color)
 		{
@@ -33,7 +33,6 @@ namespace MenschAergereDichNichtLogik
 				if (value != _numberHome)
 				{
 					_numberHome = value;
-					NotifyPropertyChanged();
 				}
 			}
 		}
