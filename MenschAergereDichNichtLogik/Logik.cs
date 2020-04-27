@@ -386,7 +386,7 @@ namespace MenschAergereDichNichtLogik
 
 				if (HausColor == PlayerList[CurrentPlayerIndex].Color)
 				{
-					if(PlayerList[CurrentPlayerIndex].NumberHome > 0)
+					if (PlayerList[CurrentPlayerIndex].NumberHome > 0)
 					{
 						PlayerList[CurrentPlayerIndex].NumberHome--;
 						UebergabeFarbe = PlayerList[CurrentPlayerIndex].Color;
