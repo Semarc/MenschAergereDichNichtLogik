@@ -12,7 +12,7 @@ namespace MenschAergereDichNichtLogik
 	}
 
 
-	public class Point : IEquatable<Point>
+	public struct Point : IEquatable<Point>
 	{
 		public Point(int intX, int intY)
 		{
@@ -22,22 +22,37 @@ namespace MenschAergereDichNichtLogik
 		public int X;
 		public int Y;
 
+
+
 		public override bool Equals(object obj)
 		{
-			if (obj == null || obj is Point == false)
+			// If parameter is null return false.
+			if (obj == null)
 			{
 				return false;
 			}
-			Point Comparer = (Point)obj;
 
-			return Comparer.X == X && Comparer.Y == Y;
+			// If parameter cannot be cast to Point return false.
+			Point p = (Point)obj;
+			if ((object)p == null)
+			{
+				return false;
+			}
+
+			// Return true if the fields match:
+			return (X == p.X) && (Y == p.Y);
 		}
 
-		public bool Equals(Point other)
+		public bool Equals(Point p)
 		{
-			return other != null &&
-				   X == other.X &&
-				   Y == other.Y;
+			// If parameter is null return false:
+			if ((object)p == null)
+			{
+				return false;
+			}
+
+			// Return true if the fields match:
+			return (X == p.X) && (Y == p.Y);
 		}
 
 		public override int GetHashCode()
@@ -48,14 +63,24 @@ namespace MenschAergereDichNichtLogik
 			return hashCode;
 		}
 
-		public static bool operator ==(Point point1, Point point2)
+		public static bool operator ==(Point left, Point right)
 		{
-			return point1.Equals(point2);
+			return left.Equals(right);
 		}
-		public static bool operator !=(Point point1, Point point2)
+
+		public static bool operator !=(Point left, Point right)
 		{
-			return !point1.Equals(point2);
+			return !(left == right);
 		}
+
+		//public static bool operator ==(Point point1, Point point2)
+		//{
+		//	return point1.Equals(point2);
+		//}
+		//public static bool operator !=(Point point1, Point point2)
+		//{
+		//	return !point1.Equals(point2);
+		//}
 
 	}
 
