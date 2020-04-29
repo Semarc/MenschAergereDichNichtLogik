@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Diagnostics.Contracts;
+using System.Linq;
 
 namespace MenschAergereDichNichtLogik
 {
 	public static class Logik
 	{
-		private static Random randomnumber = new Random();
+		private static readonly Random randomnumber = new Random();
 		/// <summary>
 		/// Gibt an, ob das Spiel gestartet wurde
 		/// </summary>
@@ -60,8 +64,8 @@ namespace MenschAergereDichNichtLogik
 		private static int AnzahlGeuerfelt;
 
 		#region Gamestart Information
-		private static readonly List<Point> StandardBoard = new List<Point>
-		{
+		private static readonly ReadOnlyCollection<Point> StandardBoard = new ReadOnlyCollection<Point>
+		(new List<Point> {
 			new Point(4, 10),
 			new Point(5, 10),
 			new Point(6, 10),
@@ -112,35 +116,35 @@ namespace MenschAergereDichNichtLogik
 			new Point(4, 0),
 			new Point(5, 0),
 			new Point(6, 0),
-		};
-		private static readonly List<(Point, int, Color)> FinishPoints = new List<(Point, int, Color)>()
-		{
-			(new Point(5, 9), 0, Color.Green),
-			(new Point(5, 8), 1, Color.Green),
-			(new Point(5, 7), 2, Color.Green),
-			(new Point(5, 6), 3, Color.Green),
+		});
+		private static readonly ReadOnlyCollection<(Point, int, Color)> FinishPoints = new ReadOnlyCollection<(Point, int, Color)>
+		(new List<(Point, int, Color)>{
+			(new Point(5, 9), 0, Color.Black),
+			(new Point(5, 8), 1, Color.Black),
+			(new Point(5, 7), 2, Color.Black),
+			(new Point(5, 6), 3, Color.Black),
 
-			(new Point(1, 5), 0, Color.Red),
-			(new Point(2, 5), 1, Color.Red),
-			(new Point(3, 5), 2, Color.Red),
-			(new Point(4, 5), 3, Color.Red),
+			(new Point(1, 5), 0, Color.Yellow),
+			(new Point(2, 5), 1, Color.Yellow),
+			(new Point(3, 5), 2, Color.Yellow),
+			(new Point(4, 5), 3, Color.Yellow),
 
-			(new Point(6, 5), 3, Color.Yellow),
-			(new Point(7, 5), 2, Color.Yellow),
-			(new Point(8, 5), 1, Color.Yellow),
-			(new Point(9, 5), 0, Color.Yellow),
+			(new Point(6, 5), 3, Color.Red),
+			(new Point(7, 5), 2, Color.Red),
+			(new Point(8, 5), 1, Color.Red),
+			(new Point(9, 5), 0, Color.Red),
 
-			(new Point(5, 4), 3, Color.Black),
-			(new Point(5, 3), 2, Color.Black),
-			(new Point(5, 2), 1, Color.Black),
-			(new Point(5, 1), 0, Color.Black)
-		};
+			(new Point(5, 4), 3, Color.Green),
+			(new Point(5, 3), 2, Color.Green),
+			(new Point(5, 2), 1, Color.Green),
+			(new Point(5, 1), 0, Color.Green)
+		});
 		#endregion
 
 		/// <summary>
 		/// Das Spielfeld, enthält die Regulären Felder und die Ziel-Felder
 		/// </summary>
-		public static Field[][] Board { get; private set; } = new Field[][]
+		private static Field[][] BoardInternal { get; set; } = new Field[][]
 		{
 			new Field[11],
 			new Field[11],
@@ -154,6 +158,26 @@ namespace MenschAergereDichNichtLogik
 			new Field[11],
 			new Field[11]
 		};
+
+		private static ReadOnlyCollection<ReadOnlyCollection<Field>> BoardCache;
+
+		public static ReadOnlyCollection<ReadOnlyCollection<Field>> Board
+		{
+			get
+			{
+				if (BoardCache == null)
+				{
+					List<ReadOnlyCollection<Field>> temp2 = new List<ReadOnlyCollection<Field>>();
+
+					for (int i = 0; i < BoardInternal.Length; i++)
+					{
+						temp2.Add(BoardInternal[i].ToList().AsReadOnly());
+					}
+					BoardCache = temp2.AsReadOnly();
+				}
+				return BoardCache;
+			}
+		}
 
 		private static int _CurrentPlayerIndex;
 		/// <summary>
@@ -178,7 +202,16 @@ namespace MenschAergereDichNichtLogik
 		/// <summary>
 		/// Die Liste aller Spieler
 		/// </summary>
-		public static List<Player> PlayerList { get; private set; } = new List<Player>();
+		public static ReadOnlyCollection<Player> PlayerList
+		{
+			get
+			{
+				return PlayerListInternal.AsReadOnly();
+			}
+		}
+
+
+		private static readonly List<Player> PlayerListInternal = new List<Player>();
 
 		#region Fieldclick
 		/// <summary>
@@ -189,32 +222,32 @@ namespace MenschAergereDichNichtLogik
 		/// <returns><see langword="true"/>, wenn ein Zug möglich ist. <see langword="false"/>, wenn kein Zug möglich ist</returns>
 		public static bool FieldClick(int X, int Y)
 		{
-			if (GameStarted && Board[X][Y] != null)
+			if (GameStarted && BoardInternal[X][Y] != null)
 			{
-				if (Board[X][Y] is FinishField)
+				if (BoardInternal[X][Y] is FinishField)
 				{
 					//Wenn eine Figur gesetzt werden soll
-					if (Board[X][Y].IsAusgewaehlt && UebergabeFarbe != Color.Empty)
+					if (BoardInternal[X][Y].IsAusgewaehlt && UebergabeFarbe != Color.Empty)
 					{
 						SetField(X, Y);
 						return true;
 					}
-					else if (Board[X][Y].Color == PlayerList[CurrentPlayerIndex].Color)
+					else if (BoardInternal[X][Y].Color == PlayerList[CurrentPlayerIndex].Color)
 					{
 						AusgewaehltZuruecksetzen();
 						return HausPfadesucher(Wuerfelzahl, X, Y);
 					}
 				}
-				else if (Board[X][Y] is Field)
+				else if (BoardInternal[X][Y] is Field)
 				{
 					//Wenn eine Figur gesetzt werden soll
-					if (Board[X][Y].IsAusgewaehlt && UebergabeFarbe != Color.Empty)
+					if (BoardInternal[X][Y].IsAusgewaehlt && UebergabeFarbe != Color.Empty)
 					{
 						SetField(X, Y);
 						return true;
 					}
 					//Wenn eine (andere) Figur des gleichen Spielers ausgewählt werden soll
-					else if (Board[X][Y].Color == PlayerList[CurrentPlayerIndex].Color)
+					else if (BoardInternal[X][Y].Color == PlayerList[CurrentPlayerIndex].Color)
 					{
 						AusgewaehltZuruecksetzen();
 						return Pfadesucher(Wuerfelzahl, X, Y);
@@ -235,19 +268,19 @@ namespace MenschAergereDichNichtLogik
 		{
 			if (Wuerfel == 0)
 			{
-				Board[X][Y].IsAusgewaehlt = true;
+				BoardInternal[X][Y].IsAusgewaehlt = true;
 				return true;
 			}
 			else if (Wuerfel == Wuerfelzahl)
 			{
 				AusgewaehltZuruecksetzen();
-				Board[X][Y].IsUrsprung = true;
+				BoardInternal[X][Y].IsUrsprung = true;
 			}
 			if (HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item1.X == X && HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item1.Y == Y)
 			{
 				return HausPfadesucher(Wuerfel - 1, HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item2.X, HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item2.Y);
 			}
-			return Pfadesucher(Wuerfel - 1, Board[X][Y].NextField.X, Board[X][Y].NextField.Y);
+			return Pfadesucher(Wuerfel - 1, BoardInternal[X][Y].NextField.X, BoardInternal[X][Y].NextField.Y);
 
 		}
 
@@ -255,32 +288,32 @@ namespace MenschAergereDichNichtLogik
 		{
 			if (Wuerfel == 0)
 			{
-				Board[X][Y].IsAusgewaehlt = true;
+				BoardInternal[X][Y].IsAusgewaehlt = true;
 				return true;
 			}
 			else if (Wuerfel == Wuerfelzahl)
 			{
 				AusgewaehltZuruecksetzen();
-				Board[X][Y].IsUrsprung = true;
+				BoardInternal[X][Y].IsUrsprung = true;
 			}
-			if (Board[X][Y].Color != Color.Empty || Board[X][Y].NextField == new Point(-1, -1))
+			if (BoardInternal[X][Y].Color != Color.Empty || BoardInternal[X][Y].NextField == new Point(-1, -1))
 			{
 				return false;
 			}
 			else
 			{
-				return HausPfadesucher(Wuerfel - 1, Board[X][Y].NextField.X, Board[X][Y].NextField.Y);
+				return HausPfadesucher(Wuerfel - 1, BoardInternal[X][Y].NextField.X, BoardInternal[X][Y].NextField.Y);
 			}
 		}
 
 		private static void SetField(int X, int Y)
 		{
 			//Wenn eine Figur geschlagen wird
-			if (Board[X][Y].Color != Color.Empty)
+			if (BoardInternal[X][Y].Color != Color.Empty)
 			{
 				foreach (Player player in PlayerList)
 				{
-					if (player.Color == Board[X][Y].Color)
+					if (player.Color == BoardInternal[X][Y].Color)
 					{
 						player.NumberHome++;
 						Uebergabe.Starthauserveraendert = true;
@@ -289,7 +322,7 @@ namespace MenschAergereDichNichtLogik
 				}
 			}
 
-			Board[X][Y].Color = UebergabeFarbe;
+			BoardInternal[X][Y].Color = UebergabeFarbe;
 			Uebergabe.GeaenderteSpielpunkte.Add(new Point(X, Y));
 			UebergabeFarbe = Color.Empty;
 
@@ -306,17 +339,17 @@ namespace MenschAergereDichNichtLogik
 		private static void AusgewaehltZuruecksetzen()
 		{
 			//Setzt die Spielsteine Zurück
-			for (int i = 0; i < Board.Length; i++)
+			for (int i = 0; i < BoardInternal.Length; i++)
 			{
-				for (int j = 0; j < Board[i].Length; j++)
+				for (int j = 0; j < BoardInternal[i].Length; j++)
 				{
-					if (Board[i][j] != null)
+					if (BoardInternal[i][j] != null)
 					{
-						Board[i][j].IsUrsprung = false;
-						if (Board[i][j].IsAusgewaehlt == true)
+						BoardInternal[i][j].IsUrsprung = false;
+						if (BoardInternal[i][j].IsAusgewaehlt == true)
 						{
 							Uebergabe.GeaenderteSpielpunkte.Add(new Point(i, j));
-							Board[i][j].IsAusgewaehlt = false;
+							BoardInternal[i][j].IsAusgewaehlt = false;
 						}
 					}
 				}
@@ -342,11 +375,11 @@ namespace MenschAergereDichNichtLogik
 					{
 						AnzahlGeuerfelt = 0;
 						//Prüfen, ob ein Zug möglich ist
-						for (int i = 0; i < Board.Length; i++)
+						for (int i = 0; i < BoardInternal.Length; i++)
 						{
-							for (int j = 0; j < Board[i].Length; j++)
+							for (int j = 0; j < BoardInternal[i].Length; j++)
 							{
-								if (Board[i][j] != null && Board[i][j].Color == PlayerList[CurrentPlayerIndex].Color)
+								if (BoardInternal[i][j] != null && BoardInternal[i][j].Color == PlayerList[CurrentPlayerIndex].Color)
 								{
 									if (Pfadesucher(Wuerfelzahl, i, j))
 									{
@@ -428,24 +461,24 @@ namespace MenschAergereDichNichtLogik
 					//Hinzufügen der Normalen Punkte zum Brett
 					foreach (Point point in StandardBoard)
 					{
-						Board[point.X][point.Y] = new Field();
+						BoardInternal[point.X][point.Y] = new Field();
 					}
 
 					//Hinzufügen der ZielPunkte zum Brett
 					foreach ((Point, int, Color) point in FinishPoints)
 					{
-						Board[point.Item1.X][point.Item1.Y] = new FinishField(point.Item3, point.Item2);
+						BoardInternal[point.Item1.X][point.Item1.Y] = new FinishField(point.Item3, point.Item2);
 					}
 
 					//Zuweisung des Nächsten Feldes für das erste Feld
-					Board[StandardBoard[0].X][StandardBoard[0].Y].NextField = new Point(StandardBoard[1].X, StandardBoard[1].Y);
+					BoardInternal[StandardBoard[0].X][StandardBoard[0].Y].NextField = new Point(StandardBoard[1].X, StandardBoard[1].Y);
 
 					NextFieldFinder(StandardBoard[1].X, StandardBoard[1].Y);
 					HouseNextFieldFinder();
 
 					for (int i = 0; i < PlayerNames.Count; i++)
 					{
-						PlayerList.Add(new Player(PlayerNames[i], (Color)i + 1));
+						PlayerListInternal.Add(new Player(PlayerNames[i], (Color)i + 1));
 					}
 					GameStarted = true;
 				}
@@ -459,22 +492,22 @@ namespace MenschAergereDichNichtLogik
 		/// <param name="Y"></param>
 		private static void NextFieldFinder(int X, int Y)
 		{
-			if (Board[X][Y].NextField == new Point(-1, -1))
+			if (BoardInternal[X][Y].NextField == new Point(-1, -1))
 			{
 				if (X - 1 >= 0)
 				{
-					if (Board[X - 1][Y] != null && Board[X - 1][Y].NextField == new Point(X, Y) == false && Board[X - 1][Y] is FinishField == false)
+					if (BoardInternal[X - 1][Y] != null && BoardInternal[X - 1][Y].NextField == new Point(X, Y) == false && BoardInternal[X - 1][Y] is FinishField == false)
 					{
-						Board[X][Y].NextField = new Point(X - 1, Y);
+						BoardInternal[X][Y].NextField = new Point(X - 1, Y);
 						NextFieldFinder(X - 1, Y);
 						return;
 					}
 				}
 				if (X + 1 <= 10)
 				{
-					if (Board[X + 1][Y] != null && Board[X + 1][Y].NextField == new Point(X, Y) == false && Board[X + 1][Y] is FinishField == false)
+					if (BoardInternal[X + 1][Y] != null && BoardInternal[X + 1][Y].NextField == new Point(X, Y) == false && BoardInternal[X + 1][Y] is FinishField == false)
 					{
-						Board[X][Y].NextField = new Point(X + 1, Y);
+						BoardInternal[X][Y].NextField = new Point(X + 1, Y);
 						NextFieldFinder(X + 1, Y);
 						return;
 
@@ -483,9 +516,9 @@ namespace MenschAergereDichNichtLogik
 				}
 				if (Y - 1 >= 0)
 				{
-					if (Board[X][Y - 1] != null && Board[X][Y - 1].NextField == new Point(X, Y) == false && Board[X][Y - 1] is FinishField == false)
+					if (BoardInternal[X][Y - 1] != null && BoardInternal[X][Y - 1].NextField == new Point(X, Y) == false && BoardInternal[X][Y - 1] is FinishField == false)
 					{
-						Board[X][Y].NextField = new Point(X, Y - 1);
+						BoardInternal[X][Y].NextField = new Point(X, Y - 1);
 						NextFieldFinder(X, Y - 1);
 						return;
 
@@ -494,9 +527,9 @@ namespace MenschAergereDichNichtLogik
 				}
 				if (Y + 1 <= 10)
 				{
-					if (Board[X][Y + 1] != null && Board[X][Y + 1].NextField == new Point(X, Y) == false && Board[X][Y + 1] is FinishField == false)
+					if (BoardInternal[X][Y + 1] != null && BoardInternal[X][Y + 1].NextField == new Point(X, Y) == false && BoardInternal[X][Y + 1] is FinishField == false)
 					{
-						Board[X][Y].NextField = new Point(X, Y + 1);
+						BoardInternal[X][Y].NextField = new Point(X, Y + 1);
 						NextFieldFinder(X, Y + 1);
 						return;
 
@@ -520,13 +553,13 @@ namespace MenschAergereDichNichtLogik
 
 		private static void HouseNextFieldfinder_Inner(int X, int Y)
 		{
-			if (Board[X][Y].NextField == new Point(-1, -1))
+			if (BoardInternal[X][Y].NextField == new Point(-1, -1))
 			{
 				if (X - 1 >= 0)
 				{
-					if (Board[X - 1][Y] != null && Board[X - 1][Y].NextField == new Point(X, Y) == false && Board[X - 1][Y] is FinishField)
+					if (BoardInternal[X - 1][Y] != null && BoardInternal[X - 1][Y].NextField == new Point(X, Y) == false && BoardInternal[X - 1][Y] is FinishField)
 					{
-						Board[X][Y].NextField = new Point(X - 1, Y);
+						BoardInternal[X][Y].NextField = new Point(X - 1, Y);
 
 						foreach (KeyValuePair<Color, Point> valuepair in HouseEndPoints)
 						{
@@ -541,9 +574,9 @@ namespace MenschAergereDichNichtLogik
 				}
 				if (X + 1 <= 10)
 				{
-					if (Board[X + 1][Y] != null && Board[X + 1][Y].NextField == new Point(X, Y) == false && Board[X + 1][Y] is FinishField)
+					if (BoardInternal[X + 1][Y] != null && BoardInternal[X + 1][Y].NextField == new Point(X, Y) == false && BoardInternal[X + 1][Y] is FinishField)
 					{
-						Board[X][Y].NextField = new Point(X + 1, Y);
+						BoardInternal[X][Y].NextField = new Point(X + 1, Y);
 
 
 						foreach (KeyValuePair<Color, Point> valuepair in HouseEndPoints)
@@ -561,9 +594,9 @@ namespace MenschAergereDichNichtLogik
 				}
 				if (Y - 1 >= 0)
 				{
-					if (Board[X][Y - 1] != null && Board[X][Y - 1].NextField == new Point(X, Y) == false && Board[X][Y - 1] is FinishField)
+					if (BoardInternal[X][Y - 1] != null && BoardInternal[X][Y - 1].NextField == new Point(X, Y) == false && BoardInternal[X][Y - 1] is FinishField)
 					{
-						Board[X][Y].NextField = new Point(X, Y - 1);
+						BoardInternal[X][Y].NextField = new Point(X, Y - 1);
 
 
 						foreach (KeyValuePair<Color, Point> valuepair in HouseEndPoints)
@@ -580,9 +613,9 @@ namespace MenschAergereDichNichtLogik
 				}
 				if (Y + 1 <= 10)
 				{
-					if (Board[X][Y + 1] != null && Board[X][Y + 1].NextField == new Point(X, Y) == false && Board[X][Y + 1] is FinishField)
+					if (BoardInternal[X][Y + 1] != null && BoardInternal[X][Y + 1].NextField == new Point(X, Y) == false && BoardInternal[X][Y + 1] is FinishField)
 					{
-						Board[X][Y].NextField = new Point(X, Y + 1);
+						BoardInternal[X][Y].NextField = new Point(X, Y + 1);
 
 
 						foreach (KeyValuePair<Color, Point> valuepair in HouseEndPoints)
