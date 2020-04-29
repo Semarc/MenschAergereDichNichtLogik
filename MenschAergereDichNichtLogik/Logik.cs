@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Runtime.InteropServices;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
-using System.Linq;
 
 namespace MenschAergereDichNichtLogik
 {
@@ -171,7 +166,7 @@ namespace MenschAergereDichNichtLogik
 
 					for (int i = 0; i < BoardInternal.Length; i++)
 					{
-						temp2.Add(BoardInternal[i].ToList().AsReadOnly());
+						temp2.Add(new ReadOnlyCollection<Field>(BoardInternal[i]));
 					}
 					BoardCache = temp2.AsReadOnly();
 				}

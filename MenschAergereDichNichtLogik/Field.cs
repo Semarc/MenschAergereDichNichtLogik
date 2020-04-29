@@ -16,12 +16,15 @@ namespace MenschAergereDichNichtLogik
 	{
 		public Point(int intX, int intY)
 		{
-			X = intX;
-			Y = intY;
+			InternalX = intX;
+			InternalY = intY;
 		}
-		public int X;
-		public int Y;
 
+		//Sicherstellen, dass der Typ Immulatable ist
+		private readonly int InternalX;
+		private readonly int InternalY;
+		public int X { get { return InternalX; } }
+		public int Y { get { return InternalY; } }
 
 
 		public override bool Equals(object obj)
@@ -72,15 +75,6 @@ namespace MenschAergereDichNichtLogik
 		{
 			return !(left == right);
 		}
-
-		//public static bool operator ==(Point point1, Point point2)
-		//{
-		//	return point1.Equals(point2);
-		//}
-		//public static bool operator !=(Point point1, Point point2)
-		//{
-		//	return !point1.Equals(point2);
-		//}
 
 	}
 
