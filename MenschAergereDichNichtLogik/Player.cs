@@ -14,7 +14,6 @@ namespace MenschAergereDichNichtLogik
 			this.Name = Name;
 			this.Color = Color;
 			_numberHome = 4;
-			_numberDiceRolls = 0;
 		}
 
 
@@ -36,33 +35,5 @@ namespace MenschAergereDichNichtLogik
 				}
 			}
 		}
-
-		private int _numberDiceRolls;
-		public int NumberDiceRolls
-		{
-			get
-			{
-				return _numberDiceRolls;
-			}
-			internal set
-			{
-				if (value != NumberDiceRolls)
-				{
-					_numberDiceRolls = value;
-					NotifyPropertyChanged();
-				}
-			}
-		}
-
-		public event PropertyChangedEventHandler PropertyChanged;
-
-		private void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
-		{
-			if (PropertyChanged != null)
-			{
-				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-
 	}
 }

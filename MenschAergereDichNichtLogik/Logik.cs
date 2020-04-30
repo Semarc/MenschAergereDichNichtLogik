@@ -16,32 +16,32 @@ namespace MenschAergereDichNichtLogik
 		/// <summary>
 		/// Gibt an, welche Punkte für welche Farbe die Eingänge zum Haus sind
 		/// </summary>
-		private static readonly Dictionary<Color, (Point, Point)> HouseEntrypoints = new Dictionary<Color, (Point, Point)>()
+		public static readonly ReadOnlyDictionary<Color, (Point, Point)> HouseEntrypointsDictionary = new ReadOnlyDictionary<Color, (Point, Point)>(new Dictionary<Color, (Point, Point)>
 		{
 			[Color.Green] = (new Point(5, 10), new Point(5, 9)),
 			[Color.Red] = (new Point(10, 5), new Point(9, 5)),
 			[Color.Black] = (new Point(5, 0), new Point(5, 1)),
 			[Color.Yellow] = (new Point(0, 5), new Point(1, 5)),
-		};
+		});
 
-		private static readonly Dictionary<Color, Point> HouseEndPoints = new Dictionary<Color, Point>()
+		public static readonly ReadOnlyDictionary<Color, Point> HouseEndPointsDictionary = new ReadOnlyDictionary<Color, Point>(new Dictionary<Color, Point>
 		{
 			[Color.Green] = new Point(5, 6),
 			[Color.Red] = new Point(6, 5),
 			[Color.Black] = new Point(5, 4),
 			[Color.Yellow] = new Point(4, 5)
-		};
+		});
 
 		/// <summary>
 		/// Gibt die Felder an, auf die neue Steine Kommen, nachdem sie aus dem Haus gekommen sind
 		/// </summary>
-		private static readonly Dictionary<Color, Point> StartPoints = new Dictionary<Color, Point>()
+		public static readonly ReadOnlyDictionary<Color, Point> StartPointsDictionary = new ReadOnlyDictionary<Color, Point>(new Dictionary<Color, Point>
 		{
 			[Color.Green] = new Point(6, 10),
 			[Color.Red] = new Point(10, 4),
 			[Color.Black] = new Point(4, 0),
 			[Color.Yellow] = new Point(0, 6)
-		};
+		});
 
 		/// <summary>
 		/// Die Farbe, die als nächstes gesetzt werden soll
@@ -52,8 +52,6 @@ namespace MenschAergereDichNichtLogik
 		/// Die Würfelzahl
 		/// </summary>
 		public static int Wuerfelzahl { get; private set; }
-
-		private static int FullHouseRepeatThrows { get; set; }
 
 		/// <summary>
 		/// Speichert, wei oft schon gewürfelt wurde, wenn man dreimal Würelbn darf, weil alle Puppen im haus sind
@@ -203,11 +201,15 @@ namespace MenschAergereDichNichtLogik
 		{
 			get
 			{
-				return PlayerListInternal.AsReadOnly();
+				if(PlayerListCache is null)
+				{
+					PlayerListCache = PlayerListInternal.AsReadOnly();
+				}
+				return PlayerListCache;
 			}
 		}
 
-
+		private static ReadOnlyCollection<Player> PlayerListCache;
 		private static readonly List<Player> PlayerListInternal = new List<Player>();
 
 		#region Fieldclick
@@ -273,9 +275,9 @@ namespace MenschAergereDichNichtLogik
 				AusgewaehltZuruecksetzen();
 				BoardInternal[X][Y].IsUrsprung = true;
 			}
-			if (HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item1.X == X && HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item1.Y == Y)
+			if (HouseEntrypointsDictionary[PlayerList[CurrentPlayerIndex].Color].Item1.X == X && HouseEntrypointsDictionary[PlayerList[CurrentPlayerIndex].Color].Item1.Y == Y)
 			{
-				return HausPfadesucher(Wuerfel - 1, HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item2.X, HouseEntrypoints[PlayerList[CurrentPlayerIndex].Color].Item2.Y);
+				return HausPfadesucher(Wuerfel - 1, HouseEntrypointsDictionary[PlayerList[CurrentPlayerIndex].Color].Item2.X, HouseEntrypointsDictionary[PlayerList[CurrentPlayerIndex].Color].Item2.Y);
 			}
 			return Pfadesucher(Wuerfel - 1, BoardInternal[X][Y].NextField.X, BoardInternal[X][Y].NextField.Y);
 
@@ -364,12 +366,12 @@ namespace MenschAergereDichNichtLogik
 		{
 			if (GameStarted)
 			{
-				if (Wuerfelzahl == 0)
-				{
+				if (Wuerfelzahl == 0 || PlayerList[CurrentPlayerIndex].NumberHome == 4 && Wuerfelzahl != 6)
+				{ 
 					Wuerfelzahl = randomnumber.Next(1, 7);
-
 					if (PlayerList[CurrentPlayerIndex].NumberHome < 4)
 					{
+						
 						AnzahlGeuerfelt = 0;
 						//Prüfen, ob ein Zug möglich ist
 						for (int i = 0; i < BoardInternal.Length; i++)
@@ -386,6 +388,10 @@ namespace MenschAergereDichNichtLogik
 								}
 							}
 						}
+					}
+					else if(Wuerfelzahl == 6)
+					{
+						return true;
 					}
 					else
 					{
@@ -426,17 +432,8 @@ namespace MenschAergereDichNichtLogik
 						{
 							PlayerList[CurrentPlayerIndex].NumberHome--;
 							UebergabeFarbe = PlayerList[CurrentPlayerIndex].Color;
-							SetField(StartPoints[PlayerList[CurrentPlayerIndex].Color].X, StartPoints[PlayerList[CurrentPlayerIndex].Color].Y);
+							SetField(StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].X, StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].Y);
 							Uebergabe.Starthauserveraendert = true;
-						}
-					}
-					else if(PlayerList[CurrentPlayerIndex].NumberHome == 4)
-					{
-						FullHouseRepeatThrows++;
-						if(FullHouseRepeatThrows >= 3)
-						{
-							FullHouseRepeatThrows = 0;
-							CurrentPlayerIndex++;
 						}
 					}
 				}
@@ -555,7 +552,7 @@ namespace MenschAergereDichNichtLogik
 		private static void HouseNextFieldFinder()
 		{
 
-			foreach (KeyValuePair<Color, (Point, Point)> valuePair in HouseEntrypoints)
+			foreach (KeyValuePair<Color, (Point, Point)> valuePair in HouseEntrypointsDictionary)
 			{
 				HouseNextFieldfinder_Inner(valuePair.Value.Item2.X, valuePair.Value.Item2.Y);
 			}
@@ -571,7 +568,7 @@ namespace MenschAergereDichNichtLogik
 					{
 						BoardInternal[X][Y].NextField = new Point(X - 1, Y);
 
-						foreach (KeyValuePair<Color, Point> valuepair in HouseEndPoints)
+						foreach (KeyValuePair<Color, Point> valuepair in HouseEndPointsDictionary)
 						{
 							if (valuepair.Value.X == X - 1 && valuepair.Value.Y == Y)
 							{
@@ -589,7 +586,7 @@ namespace MenschAergereDichNichtLogik
 						BoardInternal[X][Y].NextField = new Point(X + 1, Y);
 
 
-						foreach (KeyValuePair<Color, Point> valuepair in HouseEndPoints)
+						foreach (KeyValuePair<Color, Point> valuepair in HouseEndPointsDictionary)
 						{
 							if (valuepair.Value.X == X + 1 && valuepair.Value.Y == Y)
 							{
@@ -609,7 +606,7 @@ namespace MenschAergereDichNichtLogik
 						BoardInternal[X][Y].NextField = new Point(X, Y - 1);
 
 
-						foreach (KeyValuePair<Color, Point> valuepair in HouseEndPoints)
+						foreach (KeyValuePair<Color, Point> valuepair in HouseEndPointsDictionary)
 						{
 							if (valuepair.Value.X == X && valuepair.Value.Y == Y - 1)
 							{
@@ -628,7 +625,7 @@ namespace MenschAergereDichNichtLogik
 						BoardInternal[X][Y].NextField = new Point(X, Y + 1);
 
 
-						foreach (KeyValuePair<Color, Point> valuepair in HouseEndPoints)
+						foreach (KeyValuePair<Color, Point> valuepair in HouseEndPointsDictionary)
 						{
 							if (valuepair.Value.X == X && valuepair.Value.Y == Y + 1)
 							{

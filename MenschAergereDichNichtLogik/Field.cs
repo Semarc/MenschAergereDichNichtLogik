@@ -29,31 +29,21 @@ namespace MenschAergereDichNichtLogik
 
 		public override bool Equals(object obj)
 		{
-			// If parameter is null return false.
-			if (obj == null)
-			{
-				return false;
-			}
-
 			// If parameter cannot be cast to Point return false.
-			Point p = (Point)obj;
-			if ((object)p == null)
+			//Because Point is a Struct, Nullchecking is included
+			if(obj is Point p)
+			{
+				return Equals(p);
+
+			}
+			else
 			{
 				return false;
 			}
-
-			// Return true if the fields match:
-			return (X == p.X) && (Y == p.Y);
 		}
 
 		public bool Equals(Point p)
 		{
-			// If parameter is null return false:
-			if ((object)p == null)
-			{
-				return false;
-			}
-
 			// Return true if the fields match:
 			return (X == p.X) && (Y == p.Y);
 		}
