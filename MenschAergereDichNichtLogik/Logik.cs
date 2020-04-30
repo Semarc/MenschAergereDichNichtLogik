@@ -53,6 +53,8 @@ namespace MenschAergereDichNichtLogik
 		/// </summary>
 		public static int Wuerfelzahl { get; private set; }
 
+		private static int FullHouseRepeatThrows { get; set; }
+
 		/// <summary>
 		/// Speichert, wei oft schon gewürfelt wurde, wenn man dreimal Würelbn darf, weil alle Puppen im haus sind
 		/// </summary>
@@ -418,11 +420,24 @@ namespace MenschAergereDichNichtLogik
 
 				if (HausColor == PlayerList[CurrentPlayerIndex].Color)
 				{
-					if (PlayerList[CurrentPlayerIndex].NumberHome > 0)
+					if (Wuerfelzahl == 6)
 					{
-						PlayerList[CurrentPlayerIndex].NumberHome--;
-						UebergabeFarbe = PlayerList[CurrentPlayerIndex].Color;
-						SetField(StartPoints[PlayerList[CurrentPlayerIndex].Color].X, StartPoints[PlayerList[CurrentPlayerIndex].Color].Y);
+						if (PlayerList[CurrentPlayerIndex].NumberHome > 0)
+						{
+							PlayerList[CurrentPlayerIndex].NumberHome--;
+							UebergabeFarbe = PlayerList[CurrentPlayerIndex].Color;
+							SetField(StartPoints[PlayerList[CurrentPlayerIndex].Color].X, StartPoints[PlayerList[CurrentPlayerIndex].Color].Y);
+							Uebergabe.Starthauserveraendert = true;
+						}
+					}
+					else if(PlayerList[CurrentPlayerIndex].NumberHome == 4)
+					{
+						FullHouseRepeatThrows++;
+						if(FullHouseRepeatThrows >= 3)
+						{
+							FullHouseRepeatThrows = 0;
+							CurrentPlayerIndex++;
+						}
 					}
 				}
 				else
