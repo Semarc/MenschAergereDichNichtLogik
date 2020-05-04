@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace MenschAergereDichNichtLogik
 {
@@ -10,6 +11,15 @@ namespace MenschAergereDichNichtLogik
 		Yellow = 3,
 		Green = 4
 	}
+
+	public static class HelperClass
+	{
+		public static string ColorToProperString(this Color color)
+		{
+			return null;
+		}
+	}
+
 
 
 	public struct Point : IEquatable<Point>

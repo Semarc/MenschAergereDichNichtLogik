@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Net.Http.Headers;
 
 namespace MenschAergereDichNichtLogik
 {
@@ -213,6 +215,32 @@ namespace MenschAergereDichNichtLogik
 		private static ReadOnlyCollection<Player> PlayerListCache;
 		private static readonly List<Player> PlayerListInternal = new List<Player>();
 
+
+		private static bool MustLeaveHouse
+		{
+			get
+			{
+				return Wuerfelzahl == 6 && PlayerList[CurrentPlayerIndex].NumberHome > 0 && Board[StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].X][StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].Y].Color != PlayerList[CurrentPlayerIndex].Color;
+			}
+		}
+
+		private static bool MustClearStartpoint
+		{
+			get
+			{
+				return Board[StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].X][StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].Y].Color == PlayerList[CurrentPlayerIndex].Color;
+			}
+		}
+
+		private	static bool CanMakeRegularMove
+		{
+			get
+			{
+				return (!MustClearStartpoint && !MustLeaveHouse) || UebergabeFarbe != Color.Empty;
+			}
+		}
+
+
 		#region Fieldclick
 		/// <summary>
 		/// Methode, die aufgerufen werden soll, wenn ein Spielfeld geklickt wurde
@@ -222,7 +250,7 @@ namespace MenschAergereDichNichtLogik
 		/// <returns><see langword="true"/>, wenn ein Zug möglich ist. <see langword="false"/>, wenn kein Zug möglich ist</returns>
 		public static bool FieldClick(int Column, int Row)
 		{
-			if (GameStarted && BoardInternal[Column][Row] != null )
+			if (GameStarted && BoardInternal[Column][Row] != null && (CanMakeRegularMove || (StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].X == Column && StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].Y == Row)))
 			{
 				if (BoardInternal[Column][Row] is FinishField)
 				{
@@ -438,10 +466,10 @@ namespace MenschAergereDichNichtLogik
 		/// Methode, die beim Klick des Hauses aufgerufen werden soll
 		/// </summary>
 		/// <param name="HausColor"></param>
-		public static void HomeClick(Color HausColor)
+		public static bool HomeClick(Color HausColor)
 		{
 
-			if (GameStarted)
+			if (GameStarted && MustLeaveHouse)
 			{
 
 
@@ -455,14 +483,16 @@ namespace MenschAergereDichNichtLogik
 							UebergabeFarbe = PlayerList[CurrentPlayerIndex].Color;
 							SetField(StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].X, StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].Y);
 							Uebergabe.Starthauserveraendert = true;
+							return true;
 						}
 					}
 				}
 				else
 				{
-					return;
+					return false;
 				}
 			}
+			return false;
 		}
 		#endregion
 
@@ -662,6 +692,11 @@ namespace MenschAergereDichNichtLogik
 			}
 		}
 
+		#endregion
+
+		#region Helpers
+
+		
 		#endregion
 	}
 }
