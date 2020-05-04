@@ -325,28 +325,35 @@ namespace MenschAergereDichNichtLogik
 
 		}
 
-		private static bool HausPfadesucher(int Wuerfel, int X, int Y)
+		private static bool HausPfadesucher(int Wuerfel, int Column, int Row)
 		{
 			if (Wuerfel == 0)
 			{
-				BoardInternal[X][Y].IsAusgewaehlt = true;
+				if (BoardInternal[Column][Row].Color != PlayerList[CurrentPlayerIndex].Color)
+				{
+					BoardInternal[Column][Row].IsAusgewaehlt = true;
 				return true;
+				}
+				else
+				{
+					return false;
+				}
 			}
 			else if (Wuerfel == Wuerfelzahl)
 			{
-				BoardInternal[X][Y].IsUrsprung = true;
+				BoardInternal[Column][Row].IsUrsprung = true;
 			}
-			else if (BoardInternal[X][Y].Color != Color.Empty)
+			else if (BoardInternal[Column][Row].Color != Color.Empty)
 			{
 				return false;
 			}
-			if (BoardInternal[X][Y].NextField == new Point(-1, -1))
+			if (BoardInternal[Column][Row].NextField == new Point(-1, -1))
 			{
 				return false;
 			}
 			else
 			{
-				return HausPfadesucher(Wuerfel - 1, BoardInternal[X][Y].NextField.X, BoardInternal[X][Y].NextField.Y);
+				return HausPfadesucher(Wuerfel - 1, BoardInternal[Column][Row].NextField.X, BoardInternal[Column][Row].NextField.Y);
 			}
 		}
 
@@ -464,6 +471,7 @@ namespace MenschAergereDichNichtLogik
 						{
 							AnzahlGeuerfelt = 0;
 							CurrentPlayerIndex++;
+							Wuerfelzahl = 0;
 						}
 						return true;
 					}
@@ -473,7 +481,7 @@ namespace MenschAergereDichNichtLogik
 					return false;
 				}
 			}
-			Wuerfel = 0;
+			Wuerfel = -1;
 			return true;
 		}
 
