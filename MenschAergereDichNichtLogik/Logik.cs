@@ -120,7 +120,7 @@ namespace MenschAergereDichNichtLogik
 			new Point(5, 0),
 			new Point(6, 0),
 		});
-		private static readonly ReadOnlyCollection<(Point, int, Color)> FinishPoints = new ReadOnlyCollection<(Point, int, Color)>
+		internal static readonly ReadOnlyCollection<(Point, int, Color)> FinishPoints = new ReadOnlyCollection<(Point, int, Color)>
 		(new List<(Point, int, Color)>{
 			(new Point(5, 9), 0, Color.Green),
 			(new Point(5, 8), 1, Color.Green),
@@ -254,7 +254,7 @@ namespace MenschAergereDichNichtLogik
 		/// <param name="Row"></param>
 		/// <returns><see langword="true"/>, wenn ein Zug möglich ist. <see langword="false"/>, wenn kein Zug möglich ist</returns>
 		public static bool FieldClick(int Column, int Row)
-		  {
+		{
 			if (GameStarted && BoardInternal[Column][Row] != null && (CanMakeRegularMove || (StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].X == Column && StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].Y == Row)))
 			{
 				if (BoardInternal[Column][Row] is FinishField)
@@ -268,6 +268,7 @@ namespace MenschAergereDichNichtLogik
 					else if (BoardInternal[Column][Row].Color == PlayerList[CurrentPlayerIndex].Color)
 					{
 						AusgewaehltZuruecksetzen();
+						UebergabeFarbe = BoardInternal[Column][Row].Color;
 						return HausPfadesucher(Wuerfelzahl, Column, Row);
 					}
 				}
@@ -359,7 +360,6 @@ namespace MenschAergereDichNichtLogik
 					if (player.Color == BoardInternal[X][Y].Color)
 					{
 						player.NumberHome++;
-						Uebergabe.Starthauserveraendert = true;
 						break;
 					}
 				}
@@ -424,13 +424,14 @@ namespace MenschAergereDichNichtLogik
 		/// <summary>
 		/// Methode, die zum aufrufen des Würfels aufgerufen werden soll
 		/// </summary>
-		public static bool DiceKlick()
+		public static bool DiceKlick(out int Wuerfel)
 		{
 			if (GameStarted)
 			{
 				if (Wuerfelzahl == 0 || PlayerList[CurrentPlayerIndex].NumberHome == 4 && Wuerfelzahl != 6)
 				{
 					Wuerfelzahl = randomnumber.Next(1, 7);
+					Wuerfel = Wuerfelzahl;
 					if (PlayerList[CurrentPlayerIndex].NumberHome < 4)
 					{
 
@@ -442,7 +443,7 @@ namespace MenschAergereDichNichtLogik
 							{
 								if (BoardInternal[i][j] != null && BoardInternal[i][j].Color == PlayerList[CurrentPlayerIndex].Color)
 								{
-									if (Pfadesucher(Wuerfelzahl, i, j))
+									if (FieldClick(i, j))
 									{
 										AusgewaehltZuruecksetzen();
 										return true;
@@ -451,11 +452,11 @@ namespace MenschAergereDichNichtLogik
 							}
 						}
 					}
-					else if (Wuerfelzahl == 6)
+					if (Wuerfelzahl == 6)
 					{
 						return true;
 					}
-					else
+					if (PlayerList[CurrentPlayerIndex].NumberHome == 4)
 					{
 						AnzahlGeuerfelt++;
 
@@ -463,13 +464,17 @@ namespace MenschAergereDichNichtLogik
 						{
 							AnzahlGeuerfelt = 0;
 							CurrentPlayerIndex++;
-							return false;
 						}
+						return true;
 					}
+					CurrentPlayerIndex++;
+					Wuerfelzahl = 0;
+					AusgewaehltZuruecksetzen();
+					return false;
 				}
-				AusgewaehltZuruecksetzen();
 			}
-			return false;
+			Wuerfel = 0;
+			return true;
 		}
 
 		#endregion
@@ -495,7 +500,6 @@ namespace MenschAergereDichNichtLogik
 							PlayerList[CurrentPlayerIndex].NumberHome--;
 							UebergabeFarbe = PlayerList[CurrentPlayerIndex].Color;
 							SetField(StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].X, StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].Y);
-							Uebergabe.Starthauserveraendert = true;
 							return true;
 						}
 					}
