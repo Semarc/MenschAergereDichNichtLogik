@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Runtime.Remoting.Messaging;
+using System.Xml.Serialization;
 
 namespace MenschAergereDichNichtLogik
 {
@@ -54,8 +55,11 @@ namespace MenschAergereDichNichtLogik
 		/// <summary>
 		/// Die Würfelzahl
 		/// </summary>
-		public static int Wuerfelzahl { get; 
-			private set; }
+		public static int Wuerfelzahl
+		{
+			get;
+			private set;
+		}
 
 		/// <summary>
 		/// Speichert, wei oft schon gewürfelt wurde, wenn man dreimal Würelbn darf, weil alle Puppen im haus sind
@@ -118,10 +122,10 @@ namespace MenschAergereDichNichtLogik
 		});
 		private static readonly ReadOnlyCollection<(Point, int, Color)> FinishPoints = new ReadOnlyCollection<(Point, int, Color)>
 		(new List<(Point, int, Color)>{
-			(new Point(5, 9), 0, Color.Black),
-			(new Point(5, 8), 1, Color.Black),
-			(new Point(5, 7), 2, Color.Black),
-			(new Point(5, 6), 3, Color.Black),
+			(new Point(5, 9), 0, Color.Green),
+			(new Point(5, 8), 1, Color.Green),
+			(new Point(5, 7), 2, Color.Green),
+			(new Point(5, 6), 3, Color.Green),
 
 			(new Point(1, 5), 0, Color.Yellow),
 			(new Point(2, 5), 1, Color.Yellow),
@@ -133,10 +137,10 @@ namespace MenschAergereDichNichtLogik
 			(new Point(8, 5), 1, Color.Red),
 			(new Point(9, 5), 0, Color.Red),
 
-			(new Point(5, 4), 3, Color.Green),
-			(new Point(5, 3), 2, Color.Green),
-			(new Point(5, 2), 1, Color.Green),
-			(new Point(5, 1), 0, Color.Green)
+			(new Point(5, 4), 3, Color.Black),
+			(new Point(5, 3), 2, Color.Black),
+			(new Point(5, 2), 1, Color.Black),
+			(new Point(5, 1), 0, Color.Black)
 		});
 		#endregion
 
@@ -205,7 +209,7 @@ namespace MenschAergereDichNichtLogik
 		{
 			get
 			{
-				if(PlayerListCache is null)
+				if (PlayerListCache is null)
 				{
 					PlayerListCache = PlayerListInternal.AsReadOnly();
 				}
@@ -233,7 +237,7 @@ namespace MenschAergereDichNichtLogik
 			}
 		}
 
-		private	static bool CanMakeRegularMove
+		private static bool CanMakeRegularMove
 		{
 			get
 			{
@@ -250,7 +254,7 @@ namespace MenschAergereDichNichtLogik
 		/// <param name="Row"></param>
 		/// <returns><see langword="true"/>, wenn ein Zug möglich ist. <see langword="false"/>, wenn kein Zug möglich ist</returns>
 		public static bool FieldClick(int Column, int Row)
-		{
+		  {
 			if (GameStarted && BoardInternal[Column][Row] != null && (CanMakeRegularMove || (StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].X == Column && StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].Y == Row)))
 			{
 				if (BoardInternal[Column][Row] is FinishField)
@@ -298,9 +302,15 @@ namespace MenschAergereDichNichtLogik
 		{
 			if (Wuerfel == 0)
 			{
-				BoardInternal[Column][Row].IsAusgewaehlt = true;
-				Uebergabe.GeaenderteSpielpunkte.Add(new Point(Column, Row));
-				return true;
+				if (BoardInternal[Column][Row].Color != PlayerList[CurrentPlayerIndex].Color)
+				{
+					BoardInternal[Column][Row].IsAusgewaehlt = true;
+					return true;
+				}
+				else
+				{
+					return false;
+				}
 			}
 			else if (Wuerfel == Wuerfelzahl)
 			{
@@ -325,7 +335,11 @@ namespace MenschAergereDichNichtLogik
 			{
 				BoardInternal[X][Y].IsUrsprung = true;
 			}
-			if (BoardInternal[X][Y].Color != Color.Empty || BoardInternal[X][Y].NextField == new Point(-1, -1))
+			else if (BoardInternal[X][Y].Color != Color.Empty)
+			{
+				return false;
+			}
+			if (BoardInternal[X][Y].NextField == new Point(-1, -1))
 			{
 				return false;
 			}
@@ -352,8 +366,8 @@ namespace MenschAergereDichNichtLogik
 			}
 
 			BoardInternal[X][Y].Color = UebergabeFarbe;
-			Uebergabe.GeaenderteSpielpunkte.Add(new Point(X, Y));
 			UrsprungLoeschen();
+			UebergabeFarbe = Color.Empty;
 
 			//Wenn keine Sechs -> Nächster Spieler ist dran
 			if (Wuerfelzahl != 6)
@@ -377,7 +391,6 @@ namespace MenschAergereDichNichtLogik
 						BoardInternal[i][j].IsUrsprung = false;
 						if (BoardInternal[i][j].IsAusgewaehlt == true)
 						{
-							Uebergabe.GeaenderteSpielpunkte.Add(new Point(i, j));
 							BoardInternal[i][j].IsAusgewaehlt = false;
 						}
 					}
@@ -397,7 +410,6 @@ namespace MenschAergereDichNichtLogik
 					{
 						BoardInternal[Column][Row].Color = Color.Empty;
 						BoardInternal[Column][Row].IsUrsprung = false;
-						Uebergabe.GeaenderteSpielpunkte.Add(new Point(Column, Row));
 					}
 				}
 
@@ -417,11 +429,11 @@ namespace MenschAergereDichNichtLogik
 			if (GameStarted)
 			{
 				if (Wuerfelzahl == 0 || PlayerList[CurrentPlayerIndex].NumberHome == 4 && Wuerfelzahl != 6)
-				{ 
+				{
 					Wuerfelzahl = randomnumber.Next(1, 7);
 					if (PlayerList[CurrentPlayerIndex].NumberHome < 4)
 					{
-						
+
 						AnzahlGeuerfelt = 0;
 						//Prüfen, ob ein Zug möglich ist
 						for (int i = 0; i < BoardInternal.Length; i++)
@@ -439,7 +451,7 @@ namespace MenschAergereDichNichtLogik
 							}
 						}
 					}
-					else if(Wuerfelzahl == 6)
+					else if (Wuerfelzahl == 6)
 					{
 						return true;
 					}
@@ -697,7 +709,7 @@ namespace MenschAergereDichNichtLogik
 
 		#region Helpers
 
-		
+
 		#endregion
 	}
 }
