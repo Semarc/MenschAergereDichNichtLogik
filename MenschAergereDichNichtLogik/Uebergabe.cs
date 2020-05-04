@@ -9,10 +9,10 @@ namespace MenschAergereDichNichtLogik
 		/// <summary>
 		/// Enthält alle Spielstein, die verändert worden sind
 		/// </summary>
-		public static List<Point> GeaenderteSpielpunkte { get; set; } = new List<Point>();
+		public static List<Point> GeaenderteSpielpunkte { get;  set; } = new List<Point>();
 		/// <summary>
 		/// Gibt an, ob die Anzahl der Steine in einem der Starthäuser verändert worden sind
 		/// </summary>
-		public static bool Starthauserveraendert { get; set; }
+		public static bool Starthauserveraendert { get;  set; }
 	}
 }

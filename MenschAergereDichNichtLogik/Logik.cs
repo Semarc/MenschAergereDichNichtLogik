@@ -51,7 +51,8 @@ namespace MenschAergereDichNichtLogik
 		/// <summary>
 		/// Die Würfelzahl
 		/// </summary>
-		public static int Wuerfelzahl { get; private set; }
+		public static int Wuerfelzahl { get; 
+			private set; }
 
 		/// <summary>
 		/// Speichert, wei oft schon gewürfelt wurde, wenn man dreimal Würelbn darf, weil alle Puppen im haus sind
@@ -216,40 +217,41 @@ namespace MenschAergereDichNichtLogik
 		/// <summary>
 		/// Methode, die aufgerufen werden soll, wenn ein Spielfeld geklickt wurde
 		/// </summary>
-		/// <param name="X"></param>
-		/// <param name="Y"></param>
+		/// <param name="Column"></param>
+		/// <param name="Row"></param>
 		/// <returns><see langword="true"/>, wenn ein Zug möglich ist. <see langword="false"/>, wenn kein Zug möglich ist</returns>
-		public static bool FieldClick(int X, int Y)
+		public static bool FieldClick(int Column, int Row)
 		{
-			if (GameStarted && BoardInternal[X][Y] != null)
+			if (GameStarted && BoardInternal[Column][Row] != null )
 			{
-				if (BoardInternal[X][Y] is FinishField)
+				if (BoardInternal[Column][Row] is FinishField)
 				{
 					//Wenn eine Figur gesetzt werden soll
-					if (BoardInternal[X][Y].IsAusgewaehlt && UebergabeFarbe != Color.Empty)
+					if (BoardInternal[Column][Row].IsAusgewaehlt && UebergabeFarbe != Color.Empty)
 					{
-						SetField(X, Y);
+						SetField(Column, Row);
 						return true;
 					}
-					else if (BoardInternal[X][Y].Color == PlayerList[CurrentPlayerIndex].Color)
+					else if (BoardInternal[Column][Row].Color == PlayerList[CurrentPlayerIndex].Color)
 					{
 						AusgewaehltZuruecksetzen();
-						return HausPfadesucher(Wuerfelzahl, X, Y);
+						return HausPfadesucher(Wuerfelzahl, Column, Row);
 					}
 				}
-				else if (BoardInternal[X][Y] is Field)
+				else if (BoardInternal[Column][Row] is Field)
 				{
 					//Wenn eine Figur gesetzt werden soll
-					if (BoardInternal[X][Y].IsAusgewaehlt && UebergabeFarbe != Color.Empty)
+					if (BoardInternal[Column][Row].IsAusgewaehlt && UebergabeFarbe != Color.Empty)
 					{
-						SetField(X, Y);
+						SetField(Column, Row);
 						return true;
 					}
 					//Wenn eine (andere) Figur des gleichen Spielers ausgewählt werden soll
-					else if (BoardInternal[X][Y].Color == PlayerList[CurrentPlayerIndex].Color)
+					else if (BoardInternal[Column][Row].Color == PlayerList[CurrentPlayerIndex].Color && Wuerfelzahl != 0)
 					{
 						AusgewaehltZuruecksetzen();
-						return Pfadesucher(Wuerfelzahl, X, Y);
+						UebergabeFarbe = BoardInternal[Column][Row].Color;
+						return Pfadesucher(Wuerfelzahl, Column, Row);
 					}
 				}
 				return false;
@@ -263,23 +265,23 @@ namespace MenschAergereDichNichtLogik
 		/// <summary>
 		/// Geht rekursiv durch die Anzahl des Würfel an feldern durch
 		/// </summary>
-		private static bool Pfadesucher(int Wuerfel, int X, int Y)
+		private static bool Pfadesucher(int Wuerfel, int Column, int Row)
 		{
 			if (Wuerfel == 0)
 			{
-				BoardInternal[X][Y].IsAusgewaehlt = true;
+				BoardInternal[Column][Row].IsAusgewaehlt = true;
+				Uebergabe.GeaenderteSpielpunkte.Add(new Point(Column, Row));
 				return true;
 			}
 			else if (Wuerfel == Wuerfelzahl)
 			{
-				AusgewaehltZuruecksetzen();
-				BoardInternal[X][Y].IsUrsprung = true;
+				BoardInternal[Column][Row].IsUrsprung = true;
 			}
-			if (HouseEntrypointsDictionary[PlayerList[CurrentPlayerIndex].Color].Item1.X == X && HouseEntrypointsDictionary[PlayerList[CurrentPlayerIndex].Color].Item1.Y == Y)
+			if (HouseEntrypointsDictionary[PlayerList[CurrentPlayerIndex].Color].Item1.X == Column && HouseEntrypointsDictionary[PlayerList[CurrentPlayerIndex].Color].Item1.Y == Row)
 			{
 				return HausPfadesucher(Wuerfel - 1, HouseEntrypointsDictionary[PlayerList[CurrentPlayerIndex].Color].Item2.X, HouseEntrypointsDictionary[PlayerList[CurrentPlayerIndex].Color].Item2.Y);
 			}
-			return Pfadesucher(Wuerfel - 1, BoardInternal[X][Y].NextField.X, BoardInternal[X][Y].NextField.Y);
+			return Pfadesucher(Wuerfel - 1, BoardInternal[Column][Row].NextField.X, BoardInternal[Column][Row].NextField.Y);
 
 		}
 
@@ -292,7 +294,6 @@ namespace MenschAergereDichNichtLogik
 			}
 			else if (Wuerfel == Wuerfelzahl)
 			{
-				AusgewaehltZuruecksetzen();
 				BoardInternal[X][Y].IsUrsprung = true;
 			}
 			if (BoardInternal[X][Y].Color != Color.Empty || BoardInternal[X][Y].NextField == new Point(-1, -1))
@@ -323,7 +324,7 @@ namespace MenschAergereDichNichtLogik
 
 			BoardInternal[X][Y].Color = UebergabeFarbe;
 			Uebergabe.GeaenderteSpielpunkte.Add(new Point(X, Y));
-			UebergabeFarbe = Color.Empty;
+			UrsprungLoeschen();
 
 			//Wenn keine Sechs -> Nächster Spieler ist dran
 			if (Wuerfelzahl != 6)
@@ -356,6 +357,26 @@ namespace MenschAergereDichNichtLogik
 
 			UebergabeFarbe = Color.Empty;
 		}
+
+		private static void UrsprungLoeschen()
+		{
+			for (int Column = 0; Column < BoardInternal.Length; Column++)
+			{
+				for (int Row = 0; Row < BoardInternal[Column].Length; Row++)
+				{
+					if (BoardInternal[Column][Row] != null && BoardInternal[Column][Row].IsUrsprung)
+					{
+						BoardInternal[Column][Row].Color = Color.Empty;
+						BoardInternal[Column][Row].IsUrsprung = false;
+						Uebergabe.GeaenderteSpielpunkte.Add(new Point(Column, Row));
+					}
+				}
+
+			}
+		}
+
+
+
 		#endregion
 
 		#region Diceclick
