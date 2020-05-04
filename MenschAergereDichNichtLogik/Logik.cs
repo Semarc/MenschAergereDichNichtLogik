@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Runtime.Remoting.Messaging;
 
 namespace MenschAergereDichNichtLogik
 {
@@ -228,7 +229,7 @@ namespace MenschAergereDichNichtLogik
 		{
 			get
 			{
-				return Board[StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].X][StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].Y].Color == PlayerList[CurrentPlayerIndex].Color;
+				return Board[StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].X][StartPointsDictionary[PlayerList[CurrentPlayerIndex].Color].Y].Color == PlayerList[CurrentPlayerIndex].Color && PlayerList[CurrentPlayerIndex].NumberHome > 0;
 			}
 		}
 
@@ -269,7 +270,7 @@ namespace MenschAergereDichNichtLogik
 				else if (BoardInternal[Column][Row] is Field)
 				{
 					//Wenn eine Figur gesetzt werden soll
-					if (BoardInternal[Column][Row].IsAusgewaehlt && UebergabeFarbe != Color.Empty)
+					if (BoardInternal[Column][Row].IsAusgewaehlt && BoardInternal[Column][Row].Color != PlayerList[CurrentPlayerIndex].Color && UebergabeFarbe != Color.Empty)
 					{
 						SetField(Column, Row);
 						return true;
@@ -309,7 +310,7 @@ namespace MenschAergereDichNichtLogik
 			{
 				return HausPfadesucher(Wuerfel - 1, HouseEntrypointsDictionary[PlayerList[CurrentPlayerIndex].Color].Item2.X, HouseEntrypointsDictionary[PlayerList[CurrentPlayerIndex].Color].Item2.Y);
 			}
-			return Pfadesucher(Wuerfel - 1, BoardInternal[Column][Row].NextField.X, BoardInternal[Column][Row].NextField.Y);
+			return BoardInternal[Column][Row].NextField != new Point(-1, -1) ? Pfadesucher(Wuerfel - 1, BoardInternal[Column][Row].NextField.X, BoardInternal[Column][Row].NextField.Y) : false;
 
 		}
 

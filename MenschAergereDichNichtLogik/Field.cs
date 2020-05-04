@@ -12,13 +12,6 @@ namespace MenschAergereDichNichtLogik
 		Green = 4
 	}
 
-	public static class HelperClass
-	{
-		public static string ColorToProperString(this Color color)
-		{
-			return null;
-		}
-	}
 
 
 

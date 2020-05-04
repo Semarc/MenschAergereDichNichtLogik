@@ -20,7 +20,7 @@ namespace MenschAergereDichNichtLogik
 		{
 			get
 			{
-				for (int i = 0; i < 4; i++)
+				for (int i = 0; i < Logik.PlayerList.Count; i++)
 				{
 					Color color = (Color)i + 1;
 					Point point = Logik.HouseEndPointsDictionary[color];
@@ -30,7 +30,6 @@ namespace MenschAergereDichNichtLogik
 					FinishField current = (FinishField)Logik.Board[point.X][point.Y];
 					while (current != null)
 					{
-						current = (FinishField)Logik.Board[current.NextField.X][current.NextField.Y];
 						if (current.FinishPointColor == current.Color)
 						{
 							continue;
@@ -39,6 +38,7 @@ namespace MenschAergereDichNichtLogik
 						{
 							HasWon = false;
 						}
+						current = current.NextField != new Point(-1, -1) ? (FinishField)Logik.Board[current.NextField.X][current.NextField.Y] : null;
 					}
 					if (HasWon)
 					{
